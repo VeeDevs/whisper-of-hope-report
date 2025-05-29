@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export default function Register() {
         createdAt: new Date().toISOString(),
         userType,
         institution: institution.trim() || undefined,
-        age: age || undefined,
+        age: age ? parseInt(age) : undefined,
       };
 
       // Store user in localStorage
