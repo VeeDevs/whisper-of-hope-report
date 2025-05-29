@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState<'student' | 'working' | 'other'>('student');
   const [institution, setInstitution] = useState("");
+  const [age, setAge] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,6 +43,7 @@ export default function Register() {
         createdAt: new Date().toISOString(),
         userType,
         institution: institution.trim() || undefined,
+        age: age || undefined,
       };
 
       // Store user in localStorage
@@ -83,7 +84,7 @@ export default function Register() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium">
                   Username
@@ -115,46 +116,55 @@ export default function Register() {
                 </p>
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={userType === 'student' ? 'default' : 'outline'}
-                    onClick={() => setUserType('student')}
-                    className="flex-1"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="userType" className="text-sm font-medium">
+                    I am a
+                  </label>
+                  <select
+                    id="userType"
+                    value={userType}
+                    onChange={(e) => setUserType(e.target.value as 'student' | 'working' | 'other')}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
+                    required
                   >
-                    Student
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={userType === 'working' ? 'default' : 'outline'}
-                    onClick={() => setUserType('working')}
-                    className="flex-1"
-                  >
-                    Working
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={userType === 'other' ? 'default' : 'outline'}
-                    onClick={() => setUserType('other')}
-                    className="flex-1"
-                  >
-                    Other
-                  </Button>
+                    <option value="">Select status</option>
+                    <option value="student">Student</option>
+                    <option value="working">Working Professional</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="age" className="text-sm font-medium">
+                    Age
+                  </label>
+                  <input
+                    id="age"
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
+                    placeholder="Your age"
+                    required
+                  />
                 </div>
               </div>
 
               {(userType === 'student' || userType === 'working') && (
                 <div className="space-y-2">
                   <label htmlFor="institution" className="text-sm font-medium">
-                    {userType === 'student' ? 'School/University' : 'Workplace'}
+                    {userType === 'student' ? 'School/University Name' : 'Workplace Name'}
                   </label>
-                  <Input
+                  <input
                     id="institution"
-                    placeholder={userType === 'student' ? 'e.g., University of Cape Town' : 'e.g., Company Name'}
+                    type="text"
                     value={institution}
                     onChange={(e) => setInstitution(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
+                    placeholder={userType === 'student' ? 'e.g., University of Cape Town' : 'e.g., ABC Company'}
                   />
                   <p className="text-xs text-muted-foreground">
                     This will be displayed publicly next to your anonymous ID
