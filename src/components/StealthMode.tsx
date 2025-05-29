@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { EyeOff, Eye, Shield } from "lucide-react";
+import { EyeOff, Eye } from "lucide-react";
 
 export function StealthMode() {
   const [isStealthActive, setIsStealthActive] = useState(false);
@@ -76,49 +75,26 @@ export function StealthMode() {
   };
 
   return (
-    <Card className="border-orange-200 bg-orange-50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-orange-700">
-          <Shield className="h-5 w-5" />
-          Stealth Mode
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <p className="text-sm text-orange-600">
-            Quickly hide this page if someone approaches. Press ESC or click the button below.
-          </p>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isStealthActive ? "destructive" : "outline"}
-              onClick={toggleStealth}
-              className="flex items-center gap-2"
-            >
-              {isStealthActive ? (
-                <>
-                  <Eye className="h-4 w-4" />
-                  Exit Stealth
-                </>
-              ) : (
-                <>
-                  <EyeOff className="h-4 w-4" />
-                  Activate Stealth
-                </>
-              )}
-            </Button>
-            
-            <span className="text-xs text-orange-600">
-              Shortcut: Press ESC
-            </span>
-          </div>
-
-          <div className="text-xs text-orange-500 bg-orange-100 p-2 rounded">
-            <strong>How it works:</strong> Stealth mode replaces this page with a fake spreadsheet. 
-            Your browsing history won't show this site while stealth is active.
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="fixed bottom-4 right-4 z-50">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={toggleStealth}
+        className={`
+          ${isStealthActive 
+            ? "bg-red-100 hover:bg-red-200 border-red-300 text-red-700" 
+            : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-700"
+          }
+          shadow-lg backdrop-blur-sm transition-all duration-200
+        `}
+        title={isStealthActive ? "Exit Stealth Mode (ESC)" : "Activate Stealth Mode (ESC)"}
+      >
+        {isStealthActive ? (
+          <Eye className="h-4 w-4" />
+        ) : (
+          <EyeOff className="h-4 w-4" />
+        )}
+      </Button>
+    </div>
   );
 }
