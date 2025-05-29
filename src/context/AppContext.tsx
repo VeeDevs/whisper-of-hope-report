@@ -9,6 +9,7 @@ import {
   logoutUser
 } from "../services/storage";
 import { useToast } from "@/hooks/use-toast";
+import { detectCrisisContent } from "@/utils/crisisDetection";
 
 interface AppContextType {
   currentUser: User | null;
@@ -16,8 +17,8 @@ interface AppContextType {
   isLoading: boolean;
   setCurrentUser: (user: User) => void;
   logout: () => void;
-  createReport: (title: string, content: string) => void;
-  addCommentToReport: (reportId: string, content: string) => void;
+  createReport: (title: string, content: string) => boolean;
+  addCommentToReport: (reportId: string, content: string) => boolean;
   refreshReports: () => void;
 }
 
@@ -51,8 +52,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const createReport = (title: string, content: string) => {
-    if (!currentUser) return;
+  const createReport = (title: string, content: string): boolean => {
+    if (!currentUser) return false;
+
+    const isCrisisDetected = detectCrisisContent(title + " " + content);
 
     const newReport: Report = {
       id: Date.now().toString(),
@@ -60,7 +63,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       content,
       createdAt: new Date().toISOString(),
       anonymousId: currentUser.anonymousId,
+      institution: currentUser.institution,
       comments: [],
+      isCrisisDetected,
     };
 
     saveReport(newReport);
@@ -69,16 +74,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       title: "Report submitted",
       description: "Your anonymous report has been submitted successfully.",
     });
+
+    return isCrisisDetected;
   };
 
-  const addCommentToReport = (reportId: string, content: string) => {
-    if (!currentUser) return;
+  const addCommentToReport = (reportId: string, content: string): boolean => {
+    if (!currentUser) return false;
+
+    const isCrisisDetected = detectCrisisContent(content);
 
     const newComment = {
       id: Date.now().toString(),
       content,
       createdAt: new Date().toISOString(),
       anonymousId: currentUser.anonymousId,
+      institution: currentUser.institution,
       reportId,
     };
 
@@ -88,6 +98,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       title: "Comment added",
       description: "Your anonymous comment has been added.",
     });
+
+    return isCrisisDetected;
   };
 
   const value = {

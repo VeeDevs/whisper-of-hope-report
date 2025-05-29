@@ -4,6 +4,8 @@ export interface User {
   username: string;
   anonymousId: string;
   createdAt: string;
+  institution?: string;
+  userType?: 'student' | 'working' | 'other';
 }
 
 export interface Report {
@@ -12,7 +14,9 @@ export interface Report {
   content: string;
   createdAt: string;
   anonymousId: string;
+  institution?: string;
   comments: Comment[];
+  isCrisisDetected?: boolean;
 }
 
 export interface Comment {
@@ -21,4 +25,5 @@ export interface Comment {
   createdAt: string;
   anonymousId: string;
   reportId: string;
+  institution?: string;
 }

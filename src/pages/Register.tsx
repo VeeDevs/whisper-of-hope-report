@@ -12,6 +12,8 @@ import { useApp } from "@/context/AppContext";
 export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState<'student' | 'working' | 'other'>('student');
+  const [institution, setInstitution] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,6 +41,8 @@ export default function Register() {
         username,
         anonymousId: generateAnonymousId(),
         createdAt: new Date().toISOString(),
+        userType,
+        institution: institution.trim() || undefined,
       };
 
       // Store user in localStorage
@@ -110,6 +114,54 @@ export default function Register() {
                   *Password is stored locally and only used to verify your identity
                 </p>
               </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={userType === 'student' ? 'default' : 'outline'}
+                    onClick={() => setUserType('student')}
+                    className="flex-1"
+                  >
+                    Student
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={userType === 'working' ? 'default' : 'outline'}
+                    onClick={() => setUserType('working')}
+                    className="flex-1"
+                  >
+                    Working
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={userType === 'other' ? 'default' : 'outline'}
+                    onClick={() => setUserType('other')}
+                    className="flex-1"
+                  >
+                    Other
+                  </Button>
+                </div>
+              </div>
+
+              {(userType === 'student' || userType === 'working') && (
+                <div className="space-y-2">
+                  <label htmlFor="institution" className="text-sm font-medium">
+                    {userType === 'student' ? 'School/University' : 'Workplace'}
+                  </label>
+                  <Input
+                    id="institution"
+                    placeholder={userType === 'student' ? 'e.g., University of Cape Town' : 'e.g., Company Name'}
+                    value={institution}
+                    onChange={(e) => setInstitution(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This will be displayed publicly next to your anonymous ID
+                  </p>
+                </div>
+              )}
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Registering..." : "Register"}
               </Button>

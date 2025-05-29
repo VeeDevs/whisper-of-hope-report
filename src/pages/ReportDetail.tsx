@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Heart } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function ReportDetail() {
@@ -42,12 +42,20 @@ export default function ReportDetail() {
           Back to Reports
         </Link>
         
-        <Card>
+        <Card className={report.isCrisisDetected ? 'border-red-200 bg-red-50' : ''}>
           <CardHeader>
-            <CardTitle className="text-2xl">{report.title}</CardTitle>
-            <div className="text-sm text-muted-foreground flex justify-between items-center">
-              <span>By {report.anonymousId}</span>
-              <span>{formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}</span>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              {report.title}
+              {report.isCrisisDetected && <Heart className="h-5 w-5 text-red-500" />}
+            </CardTitle>
+            <div className="text-sm text-muted-foreground">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span>By {report.anonymousId}</span>
+                  {report.institution && <span className="text-whisper-700 font-medium"> • {report.institution}</span>}
+                </div>
+                <span>{formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}</span>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -74,7 +82,10 @@ export default function ReportDetail() {
                   report.comments.map((comment) => (
                     <div key={comment.id} className="bg-muted p-4 rounded-md">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{comment.anonymousId}</span>
+                        <div>
+                          <span className="font-medium">{comment.anonymousId}</span>
+                          {comment.institution && <span className="text-whisper-700 text-sm ml-2">• {comment.institution}</span>}
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                         </span>

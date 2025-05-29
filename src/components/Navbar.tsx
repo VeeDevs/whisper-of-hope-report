@@ -29,7 +29,10 @@ export function Navbar() {
           {currentUser ? (
             <div className="flex items-center gap-4">
               <div className="text-sm text-muted-foreground">
-                Anonymous ID: <span className="font-medium text-foreground">{currentUser.anonymousId}</span>
+                <div>Anonymous ID: <span className="font-medium text-foreground">{currentUser.anonymousId}</span></div>
+                {currentUser.institution && (
+                  <div className="text-xs text-whisper-700">{currentUser.institution}</div>
+                )}
               </div>
               <Button variant="outline" onClick={logout}>
                 Logout

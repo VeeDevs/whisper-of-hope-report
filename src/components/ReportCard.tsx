@@ -3,21 +3,30 @@ import { Report } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 
 interface ReportCardProps {
   report: Report;
 }
 
 export function ReportCard({ report }: ReportCardProps) {
-  const { id, title, content, createdAt, anonymousId, comments } = report;
+  const { id, title, content, createdAt, anonymousId, institution, comments, isCrisisDetected } = report;
   
   return (
-    <Card className="hover:border-whisper-300 transition-colors">
+    <Card className={`hover:border-whisper-300 transition-colors ${isCrisisDetected ? 'border-red-200 bg-red-50' : ''}`}>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-        <div className="text-sm text-muted-foreground flex justify-between items-center">
-          <span>By {anonymousId}</span>
-          <span>{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</span>
+        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          {title}
+          {isCrisisDetected && <Heart className="h-4 w-4 text-red-500" />}
+        </CardTitle>
+        <div className="text-sm text-muted-foreground">
+          <div className="flex justify-between items-center">
+            <div>
+              <span>By {anonymousId}</span>
+              {institution && <span className="text-whisper-700 font-medium"> • {institution}</span>}
+            </div>
+            <span>{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
