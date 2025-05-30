@@ -4,7 +4,7 @@ import { useApp } from "@/context/AppContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 import { Link } from "react-router-dom";
-import { Shield } from "lucide-react";
+import { Shield, MessageCircle } from "lucide-react";
 
 export function Navbar() {
   const { currentUser, logout } = useApp();
@@ -24,6 +24,12 @@ export function Navbar() {
           <Link to="/reports" className="hover:text-whisper-700 transition-colors">
             {t('reports')}
           </Link>
+          {currentUser && (
+            <Link to="/chat" className="hover:text-whisper-700 transition-colors flex items-center gap-1">
+              <MessageCircle className="h-4 w-4" />
+              Chat
+            </Link>
+          )}
           <Link to="/about" className="hover:text-whisper-700 transition-colors">
             {t('about')}
           </Link>

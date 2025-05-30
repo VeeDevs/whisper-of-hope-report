@@ -36,6 +36,13 @@ export default function Chat() {
       <Navbar />
       <main className="flex-1 container py-8">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2">Chat & Connect</h1>
+            <p className="text-muted-foreground">
+              Connect with friends and join group discussions in a safe, anonymous environment
+            </p>
+          </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="friends">Friends</TabsTrigger>
@@ -46,7 +53,7 @@ export default function Chat() {
             </TabsList>
 
             <TabsContent value="friends" className="mt-6">
-              <FriendsManager />
+              <FriendsManager onSelectFriend={handleSelectFriend} />
             </TabsContent>
 
             <TabsContent value="groups" className="mt-6">

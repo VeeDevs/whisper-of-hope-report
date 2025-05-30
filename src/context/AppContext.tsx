@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { User, Report, Poll, PollVote } from "../types";
+import { User, Report, Poll, PollVote, EvidenceFile } from "../types";
 import { 
   getCurrentUser, 
   getReports, 
@@ -17,7 +17,7 @@ interface AppContextType {
   isLoading: boolean;
   setCurrentUser: (user: User) => void;
   logout: () => void;
-  createReport: (title: string, content: string) => boolean;
+  createReport: (title: string, content: string, evidenceFiles?: EvidenceFile[]) => boolean;
   addCommentToReport: (reportId: string, content: string) => boolean;
   createPoll: (question: string, options: string[], duration: number) => void;
   votePoll: (pollId: string, optionId: string) => void;
@@ -57,7 +57,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const createReport = (title: string, content: string): boolean => {
+  const createReport = (title: string, content: string, evidenceFiles?: EvidenceFile[]): boolean => {
     if (!currentUser) return false;
 
     const isCrisisDetected = detectCrisisContent(title + " " + content);
@@ -71,6 +71,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       institution: currentUser.institution,
       comments: [],
       isCrisisDetected,
+      evidenceFiles: evidenceFiles || [],
     };
 
     saveReport(newReport);

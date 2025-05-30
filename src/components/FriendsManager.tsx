@@ -10,7 +10,11 @@ import { useApp } from "@/context/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { User, FriendRequest } from "@/types";
 
-export function FriendsManager() {
+interface FriendsManagerProps {
+  onSelectFriend?: (friendId: string) => void;
+}
+
+export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
   const { currentUser } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -167,7 +171,11 @@ export function FriendsManager() {
                       <p className="font-medium">{friend.anonymousId}</p>
                       <p className="text-sm text-muted-foreground">{friend.institution}</p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onSelectFriend?.(friend.id)}
+                    >
                       <MessageCircle className="h-4 w-4 mr-1" />
                       Chat
                     </Button>
