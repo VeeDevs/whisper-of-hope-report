@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, ReactNode, useState } from "react";
+import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
 
 export type SupportedLanguage = 'en' | 'af' | 'zu' | 'xh' | 'st' | 've' | 'ts' | 'nr';
 
@@ -237,7 +237,7 @@ const translations = {
   }
 };
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
 
   const setLanguage = (language: SupportedLanguage) => {
@@ -249,7 +249,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return translations[currentLanguage][key] || translations.en[key] || key;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const savedLanguage = localStorage.getItem('whisper_language') as SupportedLanguage;
     if (savedLanguage && Object.keys(translations).includes(savedLanguage)) {
       setCurrentLanguage(savedLanguage);
