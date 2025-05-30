@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserPlus, MessageCircle, Search, Check, X } from "lucide-react";
+import { Users, UserPlus, MessageCircle, Search, Check, X, Eye, VolumeX } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { User, FriendRequest } from "@/types";
@@ -20,11 +19,13 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [listenCloselyList, setListenCloselyList] = useState<User[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     loadFriends();
     loadFriendRequests();
+    loadListenCloselyList();
   }, [currentUser]);
 
   const loadFriends = () => {
@@ -46,13 +47,30 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     setFriendRequests(userRequests);
   };
 
+  const loadListenCloselyList = () => {
+    if (!currentUser) return;
+    
+    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+    const followingList = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    const userFollowing = followingList.filter((follow: any) => follow.followerId === currentUser.id);
+    const followingUsers = allUsers.filter((user: User) => 
+      userFollowing.some((follow: any) => follow.followingId === user.id)
+    );
+    setListenCloselyList(followingUsers);
+  };
+
   const searchUsers = () => {
     if (!searchQuery.trim() || !currentUser) return;
     
     const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+    const blockedUsers = JSON.parse(localStorage.getItem('whisper_silenced_voices') || '[]');
+    const userBlockedList = blockedUsers.filter((block: any) => block.blockerId === currentUser.id);
+    const blockedUserIds = userBlockedList.map((block: any) => block.blockedId);
+    
     const results = allUsers.filter((user: User) => 
       user.id !== currentUser.id &&
       !currentUser.friends?.includes(user.id) &&
+      !blockedUserIds.includes(user.id) &&
       (user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
        user.anonymousId.toLowerCase().includes(searchQuery.toLowerCase()))
     );
@@ -82,6 +100,92 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     });
 
     setSearchResults(prev => prev.filter(user => user.id !== targetUserId));
+  };
+
+  const listenClosely = (targetUserId: string, targetAnonymousId: string) => {
+    if (!currentUser) return;
+
+    const followEntry = {
+      id: Date.now().toString(),
+      followerId: currentUser.id,
+      followingId: targetUserId,
+      createdAt: new Date().toISOString()
+    };
+
+    const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    const alreadyFollowing = existingFollows.some((follow: any) => 
+      follow.followerId === currentUser.id && follow.followingId === targetUserId
+    );
+
+    if (alreadyFollowing) {
+      toast({
+        title: "Already listening closely",
+        description: `You are already listening closely to ${targetAnonymousId}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    existingFollows.push(followEntry);
+    localStorage.setItem('whisper_listen_closely', JSON.stringify(existingFollows));
+
+    loadListenCloselyList();
+
+    toast({
+      title: "Now listening closely",
+      description: `You are now listening closely to ${targetAnonymousId}`,
+    });
+  };
+
+  const silenceVoice = (targetUserId: string, targetAnonymousId: string) => {
+    if (!currentUser) return;
+
+    const blockEntry = {
+      id: Date.now().toString(),
+      blockerId: currentUser.id,
+      blockedId: targetUserId,
+      createdAt: new Date().toISOString()
+    };
+
+    const existingBlocks = JSON.parse(localStorage.getItem('whisper_silenced_voices') || '[]');
+    existingBlocks.push(blockEntry);
+    localStorage.setItem('whisper_silenced_voices', JSON.stringify(existingBlocks));
+
+    // Remove from friends if they are friends
+    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+    const currentUserIndex = allUsers.findIndex((user: User) => user.id === currentUser.id);
+    if (currentUserIndex !== -1) {
+      allUsers[currentUserIndex].friends = (allUsers[currentUserIndex].friends || []).filter((id: string) => id !== targetUserId);
+      localStorage.setItem('whisper_users', JSON.stringify(allUsers));
+      localStorage.setItem('whisper_current_user', JSON.stringify(allUsers[currentUserIndex]));
+    }
+
+    // Remove from search results and refresh lists
+    setSearchResults(prev => prev.filter(user => user.id !== targetUserId));
+    loadFriends();
+    loadListenCloselyList();
+
+    toast({
+      title: "Voice silenced",
+      description: `${targetAnonymousId} has been silenced`,
+    });
+  };
+
+  const stopListeningClosely = (targetUserId: string, targetAnonymousId: string) => {
+    if (!currentUser) return;
+
+    const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    const updatedFollows = existingFollows.filter((follow: any) => 
+      !(follow.followerId === currentUser.id && follow.followingId === targetUserId)
+    );
+    localStorage.setItem('whisper_listen_closely', JSON.stringify(updatedFollows));
+
+    loadListenCloselyList();
+
+    toast({
+      title: "Stopped listening closely",
+      description: `No longer listening closely to ${targetAnonymousId}`,
+    });
   };
 
   const handleReachOutRequest = (requestId: string, action: 'accept' | 'reject') => {
@@ -144,8 +248,9 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="friends" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="friends">Shared Strength ({friends.length})</TabsTrigger>
+            <TabsTrigger value="listening">Listen Closely ({listenCloselyList.length})</TabsTrigger>
             <TabsTrigger value="search">Find Support</TabsTrigger>
             <TabsTrigger value="requests">
               Reach Outs 
@@ -171,14 +276,61 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <p className="font-medium">{friend.anonymousId}</p>
                       <p className="text-sm text-muted-foreground">{friend.institution}</p>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onSelectFriend?.(friend.id)}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      Chat
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onSelectFriend?.(friend.id)}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        Chat
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => silenceVoice(friend.id, friend.anonymousId)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <VolumeX className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="listening" className="space-y-4">
+            {listenCloselyList.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Not listening closely to anyone yet. Use "Listen Closely" to follow others' updates.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {listenCloselyList.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{user.anonymousId}</p>
+                      <p className="text-sm text-muted-foreground">{user.institution}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => stopListeningClosely(user.id, user.anonymousId)}
+                      >
+                        Stop Listening
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => silenceVoice(user.id, user.anonymousId)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <VolumeX className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -206,14 +358,32 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <p className="font-medium">{user.anonymousId}</p>
                       <p className="text-sm text-muted-foreground">{user.institution}</p>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => sendReachOut(user.id, user.anonymousId)}
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      Offer Support
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => sendReachOut(user.id, user.anonymousId)}
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        Offer Support
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => listenClosely(user.id, user.anonymousId)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Listen Closely
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => silenceVoice(user.id, user.anonymousId)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <VolumeX className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
