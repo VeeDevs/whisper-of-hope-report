@@ -59,7 +59,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     setSearchResults(results);
   };
 
-  const sendFriendRequest = (targetUserId: string, targetAnonymousId: string) => {
+  const sendReachOut = (targetUserId: string, targetAnonymousId: string) => {
     if (!currentUser) return;
 
     const newRequest: FriendRequest = {
@@ -69,7 +69,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
       receiverId: targetUserId,
       status: 'pending',
       createdAt: new Date().toISOString(),
-      message: `${currentUser.anonymousId} wants to be friends`
+      message: `${currentUser.anonymousId} wants to offer support`
     };
 
     const existingRequests = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
@@ -77,14 +77,14 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     localStorage.setItem('whisper_friend_requests', JSON.stringify(existingRequests));
 
     toast({
-      title: "Friend request sent",
+      title: "Reach out sent",
       description: `Request sent to ${targetAnonymousId}`,
     });
 
     setSearchResults(prev => prev.filter(user => user.id !== targetUserId));
   };
 
-  const handleFriendRequest = (requestId: string, action: 'accept' | 'reject') => {
+  const handleReachOutRequest = (requestId: string, action: 'accept' | 'reject') => {
     if (!currentUser) return;
 
     const requests = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
@@ -121,12 +121,12 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
       loadFriends();
       
       toast({
-        title: "Friend request accepted",
-        description: `You are now friends with ${request.senderAnonymousId}`,
+        title: "Support connection accepted",
+        description: `You are now connected with ${request.senderAnonymousId}`,
       });
     } else {
       toast({
-        title: "Friend request rejected",
+        title: "Reach out declined",
         description: "The request has been declined",
       });
     }
@@ -139,16 +139,16 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Friends & Connections
+          Support Network & Connections
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="friends" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="friends">Friends ({friends.length})</TabsTrigger>
-            <TabsTrigger value="search">Find Friends</TabsTrigger>
+            <TabsTrigger value="friends">Shared Strength ({friends.length})</TabsTrigger>
+            <TabsTrigger value="search">Find Support</TabsTrigger>
             <TabsTrigger value="requests">
-              Requests 
+              Reach Outs 
               {friendRequests.length > 0 && (
                 <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
                   {friendRequests.length}
@@ -161,7 +161,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
             {friends.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No friends yet. Start by searching for people to connect with.</p>
+                <p>No connections yet. Start by searching for people to offer support with.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -209,10 +209,10 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => sendFriendRequest(user.id, user.anonymousId)}
+                      onClick={() => sendReachOut(user.id, user.anonymousId)}
                     >
                       <UserPlus className="h-4 w-4 mr-1" />
-                      Add Friend
+                      Offer Support
                     </Button>
                   </div>
                 ))}
@@ -224,7 +224,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
             {friendRequests.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <UserPlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No pending friend requests</p>
+                <p>No pending reach out requests</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -238,14 +238,14 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleFriendRequest(request.id, 'accept')}
+                        onClick={() => handleReachOutRequest(request.id, 'accept')}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleFriendRequest(request.id, 'reject')}
+                        onClick={() => handleReachOutRequest(request.id, 'reject')}
                       >
                         <X className="h-4 w-4" />
                       </Button>

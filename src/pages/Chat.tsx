@@ -13,7 +13,7 @@ export default function Chat() {
   const { currentUser } = useApp();
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("friends");
+  const [activeTab, setActiveTab] = useState("network");
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -37,22 +37,22 @@ export default function Chat() {
       <main className="flex-1 container py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Chat & Connect</h1>
+            <h1 className="text-3xl font-bold mb-2">Connect & Support</h1>
             <p className="text-muted-foreground">
-              Connect with friends and join group discussions in a safe, anonymous environment
+              Build your support network and join group discussions in a safe, anonymous environment
             </p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="friends">Friends</TabsTrigger>
-              <TabsTrigger value="groups">Groups</TabsTrigger>
+              <TabsTrigger value="network">Support Network</TabsTrigger>
+              <TabsTrigger value="groups">Discussion Groups</TabsTrigger>
               <TabsTrigger value="chat" disabled={!selectedFriend && !selectedGroup}>
                 Chat
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="friends" className="mt-6">
+            <TabsContent value="network" className="mt-6">
               <FriendsManager onSelectFriend={handleSelectFriend} />
             </TabsContent>
 
@@ -69,7 +69,7 @@ export default function Chat() {
               )}
               {!selectedFriend && !selectedGroup && (
                 <div className="text-center py-12 text-muted-foreground">
-                  <p>Select a friend or group to start chatting</p>
+                  <p>Select a connection or group to start chatting</p>
                 </div>
               )}
             </TabsContent>
