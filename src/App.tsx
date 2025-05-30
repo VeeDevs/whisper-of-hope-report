@@ -12,6 +12,7 @@ import ReportDetail from "./pages/ReportDetail";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import About from "./pages/About";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />
+              <Route path="/chat" element={<Chat />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

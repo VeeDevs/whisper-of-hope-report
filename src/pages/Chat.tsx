@@ -1,0 +1,75 @@
+
+import { useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { FriendsManager } from "@/components/FriendsManager";
+import { GroupManager } from "@/components/GroupManager";
+import { ChatInterface } from "@/components/ChatInterface";
+import { StealthMode } from "@/components/StealthMode";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useApp } from "@/context/AppContext";
+import { Navigate } from "react-router-dom";
+
+export default function Chat() {
+  const { currentUser } = useApp();
+  const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("friends");
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const handleSelectFriend = (friendId: string) => {
+    setSelectedFriend(friendId);
+    setSelectedGroup(null);
+    setActiveTab("chat");
+  };
+
+  const handleSelectGroup = (groupId: string) => {
+    setSelectedGroup(groupId);
+    setSelectedFriend(null);
+    setActiveTab("chat");
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 container py-8">
+        <div className="max-w-6xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="friends">Friends</TabsTrigger>
+              <TabsTrigger value="groups">Groups</TabsTrigger>
+              <TabsTrigger value="chat" disabled={!selectedFriend && !selectedGroup}>
+                Chat
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="friends" className="mt-6">
+              <FriendsManager />
+            </TabsContent>
+
+            <TabsContent value="groups" className="mt-6">
+              <GroupManager onSelectGroup={handleSelectGroup} />
+            </TabsContent>
+
+            <TabsContent value="chat" className="mt-6">
+              {selectedFriend && (
+                <ChatInterface friendId={selectedFriend} />
+              )}
+              {selectedGroup && (
+                <ChatInterface groupId={selectedGroup} />
+              )}
+              {!selectedFriend && !selectedGroup && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>Select a friend or group to start chatting</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+      <StealthMode />
+    </div>
+  );
+}

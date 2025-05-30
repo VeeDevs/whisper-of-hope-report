@@ -8,6 +8,8 @@ export interface User {
   userType?: 'student' | 'working' | 'other';
   age?: number;
   lastCheckIn?: string;
+  friends?: string[]; // Array of user IDs
+  blockedUsers?: string[]; // Array of user IDs
 }
 
 export interface Report {
@@ -92,4 +94,43 @@ export interface CheckIn {
   completed: boolean;
   response?: 'better' | 'same' | 'worse';
   createdAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderAnonymousId: string;
+  receiverId?: string; // For direct messages
+  groupId?: string; // For group messages
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  messageType: 'text' | 'image' | 'file';
+  fileUrl?: string;
+  editedAt?: string;
+  replyTo?: string; // ID of message being replied to
+}
+
+export interface ChatGroup {
+  id: string;
+  name: string;
+  description: string;
+  createdBy: string;
+  createdAt: string;
+  members: string[]; // Array of user IDs
+  admins: string[]; // Array of user IDs
+  category: 'support' | 'study' | 'general' | 'crisis';
+  isPrivate: boolean;
+  lastActivity: string;
+  memberLimit?: number;
+}
+
+export interface FriendRequest {
+  id: string;
+  senderId: string;
+  senderAnonymousId: string;
+  receiverId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  message?: string;
 }
