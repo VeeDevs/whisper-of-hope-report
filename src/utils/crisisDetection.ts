@@ -39,6 +39,16 @@ export const detectCrisisContent = (text: string): boolean => {
 };
 
 export const getSouthAfricanEmergencyContacts = () => ({
+  emergency: {
+    name: "National Emergency",
+    number: "10111", 
+    description: "Police and general emergency services"
+  },
+  medical: {
+    name: "Medical Emergency",
+    number: "10177",
+    description: "Ambulance and medical emergency"
+  },
   suicideCrisis: {
     name: "Suicide Crisis Line",
     number: "0800 567 567", 
@@ -58,5 +68,10 @@ export const getSouthAfricanEmergencyContacts = () => ({
     name: "SADAG Mental Health Line",
     number: "011 234 4837",
     description: "Mental health support"
+  },
+  safeline: {
+    name: "Safeline",
+    number: "0861 322 322",
+    description: "Trauma counseling and support"
   }
 });
