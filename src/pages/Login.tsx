@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { findUserByUsername, setCurrentUser } from "@/services/storage";
 import { useToast } from "@/hooks/use-toast";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -16,6 +17,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setCurrentUser: updateCurrentUser } = useApp();
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,20 +69,20 @@ export default function Login() {
       <main className="flex-1 container flex items-center justify-center py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('welcomeBack')}</CardTitle>
             <CardDescription className="text-center">
-              Log in to continue your anonymous journey
+              {t('loginToContinue')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium">
-                  Username
+                  {t('username')}
                 </label>
                 <Input
                   id="username"
-                  placeholder="Enter your username"
+                  placeholder={t('enterUsername')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -89,12 +91,12 @@ export default function Login() {
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t('password')}
                 </label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -102,13 +104,13 @@ export default function Login() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Log in"}
+                {isLoading ? t('loggingIn') : t('logIn')}
               </Button>
             </form>
             <div className="mt-4 text-center text-sm">
-              Don't have an account?{" "}
+              {t('dontHaveAccount')}{" "}
               <Link to="/register" className="text-whisper-700 hover:underline">
-                Register
+                {t('register')}
               </Link>
             </div>
           </CardContent>

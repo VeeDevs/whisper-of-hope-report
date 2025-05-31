@@ -8,6 +8,7 @@ import { AgeSpecificResources } from "@/components/AgeSpecificResources";
 import { StealthMode } from "@/components/StealthMode";
 import { CheckInReminder } from "@/components/CheckInReminder";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
@@ -15,6 +16,7 @@ import { useState } from "react";
 
 export default function Reports() {
   const { reports, polls, currentUser } = useApp();
+  const { t } = useLanguage();
   const [showReportForm, setShowReportForm] = useState(false);
   const [showPollForm, setShowPollForm] = useState(false);
 
@@ -37,9 +39,9 @@ export default function Reports() {
           <div className="flex-1">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Community Hub</h1>
+                <h1 className="text-3xl font-bold mb-2">{t('communityHub')}</h1>
                 <p className="text-muted-foreground">
-                  Share reports, participate in polls, and find support
+                  {t('shareReportsDesc')}
                 </p>
               </div>
               {currentUser ? (
@@ -48,18 +50,18 @@ export default function Reports() {
                     onClick={() => setShowReportForm(!showReportForm)}
                     className="bg-whisper-600 hover:bg-whisper-700"
                   >
-                    {showReportForm ? "Hide" : "Create"} Report
+                    {showReportForm ? t('hide') : t('create')} {t('reports')}
                   </Button>
                   <Button 
                     variant="outline"
                     onClick={() => setShowPollForm(!showPollForm)}
                   >
-                    {showPollForm ? "Hide" : "Create"} Poll
+                    {showPollForm ? t('hide') : t('create')} {t('polls')}
                   </Button>
                 </div>
               ) : (
                 <Button asChild variant="outline">
-                  <Link to="/login">Login to Participate</Link>
+                  <Link to="/login">{t('loginToParticipate')}</Link>
                 </Button>
               )}
             </div>
@@ -80,8 +82,8 @@ export default function Reports() {
             {/* Content tabs */}
             <Tabs defaultValue="reports" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="reports">Reports ({reports.length})</TabsTrigger>
-                <TabsTrigger value="polls">Polls ({polls?.length || 0})</TabsTrigger>
+                <TabsTrigger value="reports">{t('reports')} ({reports.length})</TabsTrigger>
+                <TabsTrigger value="polls">{t('polls')} ({polls?.length || 0})</TabsTrigger>
               </TabsList>
               
               <TabsContent value="reports" className="mt-6">
@@ -93,16 +95,16 @@ export default function Reports() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <h2 className="text-2xl font-semibold mb-2">No Reports Yet</h2>
+                    <h2 className="text-2xl font-semibold mb-2">{t('noReportsYet')}</h2>
                     <p className="text-muted-foreground mb-6">
-                      Be the first to share a report with the community.
+                      {t('beFirstToShare')}
                     </p>
                     {currentUser && (
                       <Button 
                         onClick={() => setShowReportForm(true)}
                         className="bg-whisper-600 hover:bg-whisper-700"
                       >
-                        Create First Report
+                        {t('createFirstReport')}
                       </Button>
                     )}
                   </div>
@@ -118,16 +120,16 @@ export default function Reports() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <h2 className="text-2xl font-semibold mb-2">No Polls Yet</h2>
+                    <h2 className="text-2xl font-semibold mb-2">{t('noPolls')}</h2>
                     <p className="text-muted-foreground mb-6">
-                      Create the first poll to gather community insights.
+                      {t('createFirstPoll')}
                     </p>
                     {currentUser && (
                       <Button 
                         variant="outline"
                         onClick={() => setShowPollForm(true)}
                       >
-                        Create First Poll
+                        {t('createFirstPoll')}
                       </Button>
                     )}
                   </div>
@@ -145,7 +147,7 @@ export default function Reports() {
 
       <footer className="border-t py-6 bg-muted/50">
         <div className="container px-4 md:px-6 text-center text-sm text-muted-foreground">
-          Whisper of Hope © {new Date().getFullYear()}
+          {t('copyright')} {new Date().getFullYear()}
         </div>
       </footer>
     </div>

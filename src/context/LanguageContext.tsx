@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
 
 export type SupportedLanguage = 'en' | 'af' | 'zu' | 'xh' | 'st' | 've' | 'ts' | 'nr';
@@ -19,13 +20,24 @@ const translations = {
     login: "Login",
     register: "Register",
     logout: "Logout",
+    chat: "Chat",
     
     // Home page
     whisperOfHope: "Whisper of Hope",
     safeAnonymousReporting: "Safe Anonymous Reporting",
-    homeDescription: "A secure platform for reporting bullying and harassment anonymously in South Africa.",
+    homeDescription: "An anonymous platform to report bullying incidents and support others in a safe environment.",
     viewReports: "View Reports",
     getStarted: "Get Started",
+    learnMore: "Learn More",
+    anonymousReporting: "Anonymous Reporting",
+    anonymousReportingDesc: "Report incidents anonymously without fear of retaliation, using your unique anonymous ID.",
+    communitySupport: "Community Support",
+    communitySupportDesc: "Comment on reports to offer support and advice to others in need.",
+    safeEnvironment: "Safe Environment",
+    safeEnvironmentDesc: "A moderated platform created to foster a supportive and safe community.",
+    terms: "Terms",
+    privacy: "Privacy",
+    contact: "Contact",
     
     // About page
     aboutWhisperOfHope: "About Whisper of Hope",
@@ -70,15 +82,24 @@ const translations = {
     rape: "Rape Crisis Cape Town Trust",
     rapeDescription: "Support for survivors of sexual violence",
     
-    // Reports
+    // Reports page
     communityReports: "Community Reports",
+    communityHub: "Community Hub",
+    shareReportsDesc: "Share reports, participate in polls, and find support",
     viewAnonymousReports: "View anonymous reports from the community",
     createReport: "Create Report",
     hideForm: "Hide Form",
+    hide: "Hide",
+    create: "Create",
+    createPoll: "Create Poll",
     loginToReport: "Login to Report",
+    loginToParticipate: "Login to Participate",
     noReportsYet: "No Reports Yet",
     beFirstToShare: "Be the first to share a report with the community.",
     createFirstReport: "Create First Report",
+    noPolls: "No Polls Yet",
+    createFirstPoll: "Create the first poll to gather community insights.",
+    polls: "Polls",
     
     // Forms
     createAnonymousReport: "Create Anonymous Report",
@@ -104,14 +125,28 @@ const translations = {
     password: "Password",
     choosePassword: "Choose a password",
     passwordStoredLocally: "*Password is stored locally and only used to verify your identity",
-    status: "Status",
+    status: "I am a",
     student: "Student",
-    working: "Working",
+    working: "Working Professional",
     other: "Other",
-    schoolUniversity: "School/University",
-    workplace: "Workplace",
+    age: "Age",
+    yourAge: "Your age",
+    schoolUniversity: "School/University Name",
+    workplace: "Workplace Name",
+    schoolPlaceholder: "e.g., University of Cape Town",
+    workplacePlaceholder: "e.g., ABC Company",
+    institutionNote: "This will be displayed publicly next to your anonymous ID",
     registering: "Registering...",
     alreadyHaveAccount: "Already have an account?",
+    
+    // Login
+    welcomeBack: "Welcome Back",
+    loginToContinue: "Log in to continue your anonymous journey",
+    enterUsername: "Enter your username",
+    enterPassword: "Enter your password",
+    loggingIn: "Logging in...",
+    logIn: "Log in",
+    dontHaveAccount: "Don't have an account?",
     
     // Crisis modal
     youAreNotAlone: "You Are Not Alone",
@@ -119,6 +154,13 @@ const translations = {
     remember: "Remember:",
     youMatter: "You matter, your life has value, and there are people who want to help you.",
     iUnderstand: "I Understand",
+    
+    // Chat
+    connectSupport: "Connect & Support",
+    buildSupportNetwork: "Build your support network and join group discussions in a safe, anonymous environment",
+    supportNetwork: "Support Network",
+    discussionGroups: "Discussion Groups",
+    selectConnection: "Select a connection or group to start chatting",
     
     // General
     anonymousId: "Anonymous ID",
@@ -129,7 +171,11 @@ const translations = {
     backToReports: "Back to Reports",
     reportNotFound: "Report Not Found",
     reportNotFoundDesc: "The report you're looking for doesn't exist or has been removed.",
+    pageNotFound: "Page Not Found",
+    pageNotFoundDesc: "The page you're looking for doesn't exist or has been moved.",
+    returnHome: "Return Home",
     copyright: "Whisper of Hope ©",
+    selectStatus: "Select status",
   },
   
   af: {
@@ -140,28 +186,30 @@ const translations = {
     login: "Aanmeld",
     register: "Registreer",
     logout: "Afmeld",
+    chat: "Gesels",
     
     // Home page
     whisperOfHope: "Fluistering van Hoop",
     safeAnonymousReporting: "Veilige Anonieme Rapportering",
-    homeDescription: "ʼn Veilige platform vir die anonieme rapportering van boelie en intimidasie in Suid-Afrika.",
+    homeDescription: "ʼn Anonieme platform vir die rapportering van boelie en ondersteuning van ander in ʼn veilige omgewing.",
     viewReports: "Bekyk Verslae",
     getStarted: "Begin",
+    learnMore: "Leer Meer",
+    anonymousReporting: "Anonieme Rapportering",
+    anonymousReportingDesc: "Rapporteer voorvalle anoniem sonder vrees vir wraak, met jou unieke anonieme ID.",
+    communitySupport: "Gemeenskapsondersteuning",
+    communitySupportDesc: "Kommentaar op verslae om ondersteuning en raad aan ander in nood te bied.",
+    safeEnvironment: "Veilige Omgewing",
+    safeEnvironmentDesc: "ʼn Gemodereerde platform geskep om ʼn ondersteunende en veilige gemeenskap te bevorder.",
+    terms: "Voorwaardes",
+    privacy: "Privaatheid",
+    contact: "Kontak",
     
     // About page
     aboutWhisperOfHope: "Oor Fluistering van Hoop",
     aboutDescription: "ʼn Veilige, anonieme platform geskep om mense te help om boelievoorvalle aan te meld en mekaar te ondersteun.",
     ourMission: "Ons Missie",
     ourMissionText: "Fluistering van Hoop is geskep met ʼn eenvoudige maar kragtige missie: om ʼn veilige ruimte te bied waar enigeen wat boelie ervaar of dit waarneem hul stories anoniem kan deel.",
-    howAnonymityWorks: "Hoe Anonimiteit Werk",
-    howAnonymityWorksText: "Wanneer jy by Fluistering van Hoop registreer, kry jy ʼn unieke anonieme ID wat gebruik sal word in plaas van jou regte naam wanneer jy verslae of kommentaar plaas.",
-    communityGuidelines: "Gemeenskapsriglyne",
-    communityGuidelinesText: "Alhoewel anonimiteit vryheid bied, kom dit ook met verantwoordelikheid. Ons verwag dat alle lede van ons gemeenskap hierdie basiese riglyne volg:",
-    guidelineRespectful: "Wees respekvol en ondersteunend in jou kommentaar",
-    guidelineNoIdentifying: "Deel nie identifiserende inligting oor jouself of ander nie",
-    guidelineReportAbuse: "Rapporteer misbruik of skadelike inhoud",
-    guidelineIntendedPurpose: "Gebruik die platform vir sy bedoelde doel van ondersteuning en bewustheid",
-    guidelineRealPeople: "Onthou dat regte mense agter elke verslag is",
     needImmediateHelp: "Het Onmiddellike Hulp Nodig?",
     immediateHelpText: "As jy of iemand wat jy ken in onmiddellike gevaar is, kontak asseblief plaaslike nooddienste of gebruik hierdie gespesialiseerde hulpbronne:",
     emergencyNumbers: "Noodnommers",
@@ -173,24 +221,61 @@ const translations = {
     crisis247: "24/7 krisisberading",
     childlineSA: "Childline Suid-Afrika",
     supportForChildren: "Ondersteuning vir kinders en tieners",
-    gbvCommandCentre: "GBV Bevelsentrum",
-    gbvSupport: "Geslagsgebaseerde geweld ondersteuning",
-    sadagMentalHealth: "SADAG Geestesgesondheid Lyn",
-    mentalHealthSupport: "Geestesgesondheid ondersteuning",
-    safeline: "Safeline",
-    traumaCounseling: "Trauma berading en ondersteuning",
-    lifelineNorthern: "Lifeline Noord-Kaap",
-    emotionalSupport: "Emosionele ondersteuning en berading",
-    relevantFoundations: "Relevante Stigtings & Organisasies",
-    famsa: "FAMSA (Familie en Huwelik Vereniging van SA)",
-    famsaDescription: "Familie berading en sosiale dienste",
-    tears: "TEARS Stigting",
-    tearsDescription: "Ondersteuning vir slagoffers van misdaad en geweld",
-    mosaic: "Mosaic Opleidingsdiens & Genesing Sentrum",
-    mosaicDescription: "Opleiding en genesing vir trauma oorlewendes",
-    rape: "Verkragting Krisis Kaapstad Trust",
-    rapeDescription: "Ondersteuning vir oorlewendes van seksuele geweld",
-    copyright: "Fluistering van Hoop ©",
+    
+    // Reports page
+    communityHub: "Gemeenskapshub",
+    shareReportsDesc: "Deel verslae, neem deel aan peiling, en vind ondersteuning",
+    createReport: "Skep Verslag",
+    hide: "Versteek",
+    create: "Skep",
+    createPoll: "Skep Peiling",
+    loginToParticipate: "Meld aan om Deel te neem",
+    noReportsYet: "Nog Geen Verslae Nie",
+    beFirstToShare: "Wees die eerste om ʼn verslag met die gemeenskap te deel.",
+    createFirstReport: "Skep Eerste Verslag",
+    noPolls: "Nog Geen Peilings Nie",
+    createFirstPoll: "Skep die eerste peiling om gemeenskapsinsigte te versamel.",
+    polls: "Peilings",
+    
+    // Forms
+    createAnonymousReport: "Skep Anonieme Verslag",
+    reportWillBeAnonymous: "Jou verslag sal anoniem wees. Slegs jou anonieme ID sal sigbaar wees.",
+    title: "Titel",
+    briefTitle: "Kort titel van jou verslag",
+    reportDetails: "Verslag Besonderhede",
+    describeInDetail: "Beskryf die situasie in detail...",
+    submitReport: "Dien Verslag In",
+    
+    // Registration
+    createAccount: "Skep ʼn Rekening",
+    registerForAnonymousId: "Registreer om jou unieke anonieme identiteit te kry",
+    username: "Gebruikersnaam",
+    chooseUsername: "Kies ʼn gebruikersnaam",
+    password: "Wagwoord",
+    choosePassword: "Kies ʼn wagwoord",
+    passwordStoredLocally: "*Wagwoord word plaaslik gestoor en word slegs gebruik om jou identiteit te verifieer",
+    status: "Ek is ʼn",
+    student: "Student",
+    working: "Werkende Professioneel",
+    other: "Ander",
+    age: "Ouderdom",
+    yourAge: "Jou ouderdom",
+    schoolUniversity: "Skool/Universiteit Naam",
+    workplace: "Werkplek Naam",
+    schoolPlaceholder: "bv., Universiteit van Kaapstad",
+    workplacePlaceholder: "bv., ABC Maatskappy",
+    institutionNote: "Dit sal openlik langs jou anonieme ID vertoon word",
+    registering: "Registreer...",
+    alreadyHaveAccount: "Het reeds ʼn rekening?",
+    
+    // Login
+    welcomeBack: "Welkom Terug",
+    loginToContinue: "Meld aan om jou anonieme reis voort te sit",
+    enterUsername: "Voer jou gebruikersnaam in",
+    enterPassword: "Voer jou wagwoord in",
+    loggingIn: "Meld aan...",
+    logIn: "Meld aan",
+    dontHaveAccount: "Het nie ʼn rekening nie?",
     
     // Crisis modal
     youAreNotAlone: "Jy is Nie Alleen Nie",
@@ -199,9 +284,20 @@ const translations = {
     remember: "Onthou:",
     youMatter: "Jy maak saak, jou lewe het waarde, en daar is mense wat jou wil help.",
     
+    // Chat
+    connectSupport: "Verbind & Ondersteun",
+    buildSupportNetwork: "Bou jou ondersteuningsnetwerk en sluit aan by groepbesprekings in ʼn veilige, anonieme omgewing",
+    supportNetwork: "Ondersteuningsnetwerk",
+    discussionGroups: "Besprekingsgroepe",
+    selectConnection: "Kies ʼn verbinding of groep om te begin gesels",
+    
     // General
     anonymousId: "Anonieme ID",
     copyright: "Fluistering van Hoop ©",
+    selectStatus: "Kies status",
+    pageNotFound: "Bladsy Nie Gevind Nie",
+    pageNotFoundDesc: "Die bladsy waarna jy soek bestaan nie of is geskuif.",
+    returnHome: "Keer Terug Huis",
   },
   
   zu: {
@@ -212,19 +308,25 @@ const translations = {
     login: "Ngena",
     register: "Bhalisa",
     logout: "Phuma",
+    chat: "Xoxa",
     
     // Home page
     whisperOfHope: "Ukunyenyeza Kwethemba",
     safeAnonymousReporting: "Ukubika Okuphephile Okungaboniswi",
-    homeDescription: "Inkundla ephephile yokubika ukucindezela nokuhlukunyezwa ngaphandle kokuboniswa eNingizimu Afrika.",
+    homeDescription: "Inkundla engaboniswi yokubika ukucindezela nokusekela abanye endaweni ephephile.",
     viewReports: "Buka Imibiko",
     getStarted: "Qala",
+    learnMore: "Funda Kabanzi",
+    anonymousReporting: "Ukubika Okungaboniswi",
+    anonymousReportingDesc: "Bika izigameko ngaphandle kokuboniswa ngaphandle kokwesaba ukuphindisela, usebenzisa i-ID yakho engaboniswi.",
+    communitySupport: "Ukusekela Komphakathi",
+    communitySupportDesc: "Phawula emibikweni ukuze unikeze ukusekela neseluleko kwabanye abasesidingeni.",
+    safeEnvironment: "Indawo Ephephile",
+    safeEnvironmentDesc: "Inkundla elawulwayo edalwe ukuze ikhuthaze umphakathi osekelanayo nophephile.",
     
     // About page
     aboutWhisperOfHope: "Mayelana Nokunyenyeza Kwethemba",
     aboutDescription: "Inkundla ephephile, engaboniswi eyenzelwe ukusiza abantu ukuthi babike izigameko zokucindezela futhi basekelane.",
-    ourMission: "Umgomo Wethu",
-    ourMissionText: "Ukunyenyeza Kwethemba kwadalwa ngomgomo olula kodwa onamandla: ukuhlinzeka ngendawo ephephile lapho noma ubani ohlukunyezwa noma okubonayo angabelana ngezindaba zakhe ngaphandle kokuboniswa.",
     needImmediateHelp: "Udinga Usizo Olusheshayo?",
     immediateHelpText: "Uma wena noma othile omwaziyo usengozini esheshayo, sicela uthintane nezinsiza zasendaweni noma usebenzise lezi zinsiza ezikhethekileyo:",
     emergencyNumbers: "Izinombolo Zesimo Esiphuthumayo",
@@ -236,7 +338,48 @@ const translations = {
     crisis247: "Ukululekwa kwesikhathi esinzima okungu-24/7",
     childlineSA: "I-Childline eNingizimu Afrika",
     supportForChildren: "Ukusekela izingane nabafikisayo",
-    copyright: "Ukunyenyeza Kwethemba ©",
+    
+    // Reports page
+    communityHub: "Isikhungo Somphakathi",
+    shareReportsDesc: "Yabelana ngemibiko, bamba iqhaza ezinhlolisweni, futhi uthole ukusekela",
+    createReport: "Dala Umbiko",
+    hide: "Fihla",
+    create: "Dala",
+    createPoll: "Dala Inhloliswa",
+    loginToParticipate: "Ngena Ukuze Ubambe Iqhaza",
+    noReportsYet: "Ayikho Imibiko Okwamanje",
+    beFirstToShare: "Yiba owokuqala ukwabelana ngombiko nomphakathi.",
+    createFirstReport: "Dala Umbiko Wokuqala",
+    noPolls: "Azikho Izinhloliswa Okwamanje",
+    createFirstPoll: "Dala inhloliswa yokuqala ukuze uqoqe imibono yomphakathi.",
+    polls: "Izinhloliswa",
+    
+    // Registration
+    createAccount: "Dala I-akhawunti",
+    registerForAnonymousId: "Bhalisa ukuze uthole ubunyangasho bakho obungaboniswi obuhlukile",
+    username: "Igama lomsebenzisi",
+    chooseUsername: "Khetha igama lomsebenzisi",
+    password: "Iphasiwedi",
+    choosePassword: "Khetha iphasiwedi",
+    status: "Ngingu",
+    student: "Umfundi",
+    working: "Uchwepheshe Osebenzayo",
+    other: "Okunye",
+    age: "Iminyaka",
+    yourAge: "Iminyaka yakho",
+    schoolUniversity: "Igama Lesikole/Inyuvesi",
+    workplace: "Igama Lendawo Yokusebenza",
+    registering: "Iyabhalisa...",
+    alreadyHaveAccount: "Usena i-akhawunti?",
+    
+    // Login
+    welcomeBack: "Siyakwamukela Futhi",
+    loginToContinue: "Ngena ukuze uqhubeke nohambo lwakho olungaboniswi",
+    enterUsername: "Faka igama lakho lomsebenzisi",
+    enterPassword: "Faka iphasiwedi yakho",
+    loggingIn: "Iyangena...",
+    logIn: "Ngena",
+    dontHaveAccount: "Awuna i-akhawunti?",
     
     // Crisis modal
     youAreNotAlone: "Awuwedwa",
@@ -245,6 +388,11 @@ const translations = {
     
     // General
     anonymousId: "I-ID Engaboniswi",
+    copyright: "Ukunyenyeza Kwethemba ©",
+    selectStatus: "Khetha isimo",
+    pageNotFound: "Ikhasi Alitholakali",
+    pageNotFoundDesc: "Ikhasi olifunayo alikhona noma lishintshiwe.",
+    returnHome: "Buyela Ekhaya",
   },
   
   xh: {
@@ -255,11 +403,15 @@ const translations = {
     login: "Ngena",
     register: "Bhalisa",
     logout: "Phuma",
+    chat: "Ncokola",
     
     // Home page
     whisperOfHope: "Ukusebeza Kwethemba",
     safeAnonymousReporting: "Ukuxela Okukhuselekileyo Okungaboniswi",
-    homeDescription: "Iqonga elikhuselekileyo lokuxela ukuxhaphaza nokuhlukunyezwa ngaphandle kokuboniswa eMzantsi Afrika.",
+    homeDescription: "Iqonga elingaboniswi lokuxela ukuxhaphaza nokuxhasa abanye kwindawo ekhuselekileyo.",
+    viewReports: "Jonga Iingxelo",
+    getStarted: "Qala",
+    learnMore: "Funda Ngakumbi",
     
     // About page
     aboutWhisperOfHope: "Malunga Nokusebeza Kwethemba",
@@ -270,15 +422,23 @@ const translations = {
     nationalEmergency: "Ungxamiseko lweSizwe",
     policeEmergency: "Ungxamiseko lwamaPolisa",
     medicalEmergency: "Ungxamiseko lwezonyango",
-    copyright: "Ukusebeza Kwethemba ©",
     
-    // Crisis modal
-    youAreNotAlone: "Awukho Wedwa",
-    crisisDetected: "Sibone ukuba mhlawumbe udlula kwixesha elinzima. Nazi izixhobo ezinokukunceda:",
-    iUnderstand: "Ndiyaqonda",
+    // Registration
+    createAccount: "Yenza iAkhawunti",
+    username: "Igama lomsebenzisi",
+    password: "Iphaswedi",
+    status: "Ndingu",
+    student: "Umfundi",
+    working: "Ingcali eSebenzayo",
+    other: "Okunye",
+    age: "Ubudala",
+    registering: "Iyabhalisa...",
     
     // General
     anonymousId: "I-ID Engaboniswi",
+    copyright: "Ukusebeza Kwethemba ©",
+    pageNotFound: "Iphepha Alifumanekanga",
+    returnHome: "Buyela Ekhaya",
   },
   
   st: {
@@ -289,16 +449,31 @@ const translations = {
     login: "Kena",
     register: "Ingodisa",
     logout: "Tswa",
+    chat: "Buisana",
+    
+    // Home page
+    whisperOfHope: "Lebitso la Tshepo",
+    safeAnonymousReporting: "Tlaleho e Bolokehileng e sa Tsebahaleng",
+    homeDescription: "Sethala se sa tsebahaleng sa ho tlaleha diketsahalo tsa thibelo le ho tshehetsa ba bang sebakeng se sireletsehileng.",
     
     // About page
     aboutWhisperOfHope: "Ka Lebitso la Tshepo",
     aboutDescription: "Sethala se sireletsehileng, se sa tsebahaleng se entsoeng ho thusa batho ho tlaleha ditiragalo tsa thibelo le ho thusana.",
     needImmediateHelp: "O hloka Thuso ka Potlako?",
-    copyright: "Lebitso la Tshepo ©",
     
-    // Crisis modal
-    youAreNotAlone: "Ha o le Mong",
-    iUnderstand: "Kea Utloisisa",
+    // Registration
+    createAccount: "Etsa Akhaonto",
+    username: "Lebitso la mosebedisi",
+    password: "Phaswete",
+    status: "Ke",
+    student: "Moithuti",
+    age: "Dilemo",
+    registering: "E ngodisa...",
+    
+    // General
+    copyright: "Lebitso la Tshepo ©",
+    pageNotFound: "Leqephe ha le Fumanehe",
+    returnHome: "Kgutlela Lapeng",
   },
   
   ve: {
@@ -309,16 +484,26 @@ const translations = {
     login: "Pinda",
     register: "Nwalisa",
     logout: "Buda",
+    chat: "Amba",
+    
+    // Home page
+    whisperOfHope: "Tshikhudo tsha Themba",
     
     // About page
     aboutWhisperOfHope: "Nga ha Tshikhudo tsha Themba",
     aboutDescription: "Thulamela ya vhutshilo, yo songo divhadzwaho yo itaho u thusa vhathu u khou rangela zwitshinyatshinya na u thusana.",
     needImmediateHelp: "Ni toda Thuso na Lunyilo?",
-    copyright: "Tshikhudo tsha Themba ©",
     
-    // Crisis modal
-    youAreNotAlone: "A ni Nwani",
-    iUnderstand: "Ndi a Pfesesa",
+    // Registration
+    createAccount: "Itani Akhantu",
+    username: "Dzina la mushumisi",
+    password: "Phasiwe",
+    age: "Minwaha",
+    
+    // General
+    copyright: "Tshikhudo tsha Themba ©",
+    pageNotFound: "Tsihalo a tshi Ngo Wanala",
+    returnHome: "Vhuyelani Hayani",
   },
   
   ts: {
@@ -329,16 +514,26 @@ const translations = {
     login: "Ngena", 
     register: "Tsalela",
     logout: "Huma",
+    chat: "Vulavula",
+    
+    // Home page
+    whisperOfHope: "Ku Hlanganisa ka Themba",
     
     // About page
     aboutWhisperOfHope: "Mayelana na ku Hlanganisa ka Themba",
     aboutDescription: "Pulatifomo yo sirheleka, yo nga vonakali yo endleriwa ku pfuna vanhu ku vika swiendlakalo swa ku rharhela na ku tirhisana.",
     needImmediateHelp: "U lava Mpfuno hi ku Hatlisa?",
-    copyright: "Ku Hlanganisa ka Themba ©",
     
-    // Crisis modal
-    youAreNotAlone: "A wu nga Nweni",
-    iUnderstand: "Ndzi a Twisisa",
+    // Registration
+    createAccount: "Endla Akhawunti",
+    username: "Vito ra mutirhisi",
+    password: "Phasiwe",
+    age: "Malembe",
+    
+    // General
+    copyright: "Ku Hlanganisa ka Themba ©",
+    pageNotFound: "Tluka ri nga Kumeki",
+    returnHome: "Vuya Kaya",
   },
   
   nr: {
@@ -349,16 +544,26 @@ const translations = {
     login: "Ngena",
     register: "Bhalisa",
     logout: "Phuma",
+    chat: "Khuluma",
+    
+    // Home page
+    whisperOfHope: "Ukusebeza Kwethemba",
     
     // About page
     aboutWhisperOfHope: "Ngenxa Yokusebeza Kwethemba",
     aboutDescription: "Inkundla ephephile, engaboniswi eyenzelwe ukusiza abantu ukuthi babike izigameko zokucindezela futhi basekelane.",
     needImmediateHelp: "Ufuna Usizo Ngokushesha?",
-    copyright: "Ukusebeza Kwethemba ©",
     
-    // Crisis modal
-    youAreNotAlone: "Kawuwedwa",
-    iUnderstand: "Ngiyezwa",
+    // Registration
+    createAccount: "Dala I-akhawunti",
+    username: "Igama lomsebenzisi",
+    password: "Iphasiwedi",
+    age: "Iminyaka",
+    
+    // General
+    copyright: "Ukusebeza Kwethemba ©",
+    pageNotFound: "Ikhasi Alitholakali",
+    returnHome: "Buyela Ekhaya",
   }
 };
 

@@ -2,6 +2,7 @@
 import { Navbar } from "@/components/Navbar";
 import { CommentForm } from "@/components/CommentForm";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>();
   const { reports, currentUser } = useApp();
+  const { t } = useLanguage();
   
   const report = reports.find(report => report.id === id);
   
@@ -20,10 +22,10 @@ export default function ReportDetail() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1 container px-4 py-8 md:px-6 flex flex-col items-center justify-center">
-          <h1 className="text-2xl font-bold mb-4">Report Not Found</h1>
-          <p className="text-muted-foreground mb-6">The report you're looking for doesn't exist or has been removed.</p>
+          <h1 className="text-2xl font-bold mb-4">{t('reportNotFound')}</h1>
+          <p className="text-muted-foreground mb-6">{t('reportNotFoundDesc')}</p>
           <Button asChild variant="outline">
-            <Link to="/reports">Back to Reports</Link>
+            <Link to="/reports">{t('backToReports')}</Link>
           </Button>
         </main>
       </div>
@@ -39,7 +41,7 @@ export default function ReportDetail() {
           className="inline-flex items-center text-sm text-whisper-700 hover:underline mb-4"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to Reports
+          {t('backToReports')}
         </Link>
         
         <Card className={report.isCrisisDetected ? 'border-red-200 bg-red-50' : ''}>
@@ -51,7 +53,7 @@ export default function ReportDetail() {
             <div className="text-sm text-muted-foreground">
               <div className="flex justify-between items-center">
                 <div>
-                  <span>By {report.anonymousId}</span>
+                  <span>{t('anonymousId')}: {report.anonymousId}</span>
                   {report.institution && <span className="text-whisper-700 font-medium"> • {report.institution}</span>}
                 </div>
                 <span>{formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}</span>
@@ -64,15 +66,15 @@ export default function ReportDetail() {
             <Separator className="my-6" />
             
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Comments ({report.comments.length})</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('comments')} ({report.comments.length})</h3>
               
               {currentUser ? (
                 <CommentForm reportId={report.id} />
               ) : (
                 <div className="bg-muted p-4 rounded-md text-center">
-                  <p className="mb-2">Please login to comment</p>
+                  <p className="mb-2">{t('pleaseLoginToComment')}</p>
                   <Button asChild variant="outline" size="sm">
-                    <Link to="/login">Login</Link>
+                    <Link to="/login">{t('login')}</Link>
                   </Button>
                 </div>
               )}
@@ -83,7 +85,7 @@ export default function ReportDetail() {
                     <div key={comment.id} className="bg-muted p-4 rounded-md">
                       <div className="flex justify-between items-center mb-2">
                         <div>
-                          <span className="font-medium">{comment.anonymousId}</span>
+                          <span className="font-medium">{t('anonymousId')}: {comment.anonymousId}</span>
                           {comment.institution && <span className="text-whisper-700 text-sm ml-2">• {comment.institution}</span>}
                         </div>
                         <span className="text-xs text-muted-foreground">
@@ -95,7 +97,7 @@ export default function ReportDetail() {
                   ))
                 ) : (
                   <p className="text-center text-muted-foreground py-4">
-                    No comments yet. Be the first to comment!
+                    {t('noCommentsYet')}
                   </p>
                 )}
               </div>
@@ -106,7 +108,7 @@ export default function ReportDetail() {
       
       <footer className="border-t py-6 bg-muted/50">
         <div className="container px-4 md:px-6 text-center text-sm text-muted-foreground">
-          Whisper of Hope © {new Date().getFullYear()}
+          {t('copyright')} {new Date().getFullYear()}
         </div>
       </footer>
     </div>

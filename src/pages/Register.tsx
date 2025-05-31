@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { saveUser, setCurrentUser, findUserByUsername, generateUserId, generateAnonymousId } from "@/services/storage";
 import { useToast } from "@/hooks/use-toast";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -19,6 +20,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setCurrentUser: updateCurrentUser } = useApp();
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,20 +81,20 @@ export default function Register() {
       <main className="flex-1 container flex items-center justify-center py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('createAccount')}</CardTitle>
             <CardDescription className="text-center">
-              Register to get your unique anonymous identity
+              {t('registerForAnonymousId')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium">
-                  Username
+                  {t('username')}
                 </label>
                 <Input
                   id="username"
-                  placeholder="Choose a username"
+                  placeholder={t('chooseUsername')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -101,26 +103,26 @@ export default function Register() {
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t('password')}
                 </label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Choose a password"
+                  placeholder={t('choosePassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="new-password"
                 />
                 <p className="text-xs text-muted-foreground">
-                  *Password is stored locally and only used to verify your identity
+                  {t('passwordStoredLocally')}
                 </p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="userType" className="text-sm font-medium">
-                    I am a
+                    {t('status')}
                   </label>
                   <select
                     id="userType"
@@ -129,16 +131,16 @@ export default function Register() {
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
                     required
                   >
-                    <option value="">Select status</option>
-                    <option value="student">Student</option>
-                    <option value="working">Working Professional</option>
-                    <option value="other">Other</option>
+                    <option value="">{t('selectStatus')}</option>
+                    <option value="student">{t('student')}</option>
+                    <option value="working">{t('working')}</option>
+                    <option value="other">{t('other')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="age" className="text-sm font-medium">
-                    Age
+                    {t('age')}
                   </label>
                   <input
                     id="age"
@@ -148,7 +150,7 @@ export default function Register() {
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
-                    placeholder="Your age"
+                    placeholder={t('yourAge')}
                     required
                   />
                 </div>
@@ -157,7 +159,7 @@ export default function Register() {
               {(userType === 'student' || userType === 'working') && (
                 <div className="space-y-2">
                   <label htmlFor="institution" className="text-sm font-medium">
-                    {userType === 'student' ? 'School/University Name' : 'Workplace Name'}
+                    {userType === 'student' ? t('schoolUniversity') : t('workplace')}
                   </label>
                   <input
                     id="institution"
@@ -165,22 +167,22 @@ export default function Register() {
                     value={institution}
                     onChange={(e) => setInstitution(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-whisper-500"
-                    placeholder={userType === 'student' ? 'e.g., University of Cape Town' : 'e.g., ABC Company'}
+                    placeholder={userType === 'student' ? t('schoolPlaceholder') : t('workplacePlaceholder')}
                   />
                   <p className="text-xs text-muted-foreground">
-                    This will be displayed publicly next to your anonymous ID
+                    {t('institutionNote')}
                   </p>
                 </div>
               )}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Registering..." : "Register"}
+                {isLoading ? t('registering') : t('register')}
               </Button>
             </form>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              {t('alreadyHaveAccount')}{" "}
               <Link to="/login" className="text-whisper-700 hover:underline">
-                Log in
+                {t('login')}
               </Link>
             </div>
           </CardContent>
