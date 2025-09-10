@@ -176,6 +176,28 @@ const translations = {
     returnHome: "Return Home",
     copyright: "Whisper of Hope ©",
     selectStatus: "Select status",
+    
+    // Auth
+    auth: {
+      welcome: "Welcome to Whisper of Hope",
+      subtitle: "Your safe space for anonymous support",
+      signIn: "Sign In",
+      signUp: "Sign Up", 
+      email: "Email",
+      password: "Password",
+      username: "Username",
+      institution: "Institution",
+      institutionPlaceholder: "School, University, or Organization",
+      userType: "User Type",
+      student: "Student",
+      working: "Working Professional",
+      other: "Other",
+      age: "Age",
+      signingIn: "Signing In...",
+      signingUp: "Signing Up...",
+      checkEmail: "Please check your email for a confirmation link",
+      loginFirst: "Please log in to access this feature"
+    },
   },
   
   af: {

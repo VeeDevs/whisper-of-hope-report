@@ -11,14 +11,21 @@ import { useApp } from "@/context/AppContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Reports() {
-  const { reports, polls, currentUser } = useApp();
+  const { reports, polls, currentUser, session } = useApp();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [showReportForm, setShowReportForm] = useState(false);
   const [showPollForm, setShowPollForm] = useState(false);
+
+  useEffect(() => {
+    if (!session) {
+      navigate('/auth');
+    }
+  }, [session, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col">

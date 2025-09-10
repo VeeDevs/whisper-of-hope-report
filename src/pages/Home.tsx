@@ -33,7 +33,7 @@ export default function Home() {
                   </Button>
                 ) : (
                   <Button asChild size="lg" className="bg-whisper-600 hover:bg-whisper-700">
-                    <Link to="/register">{t('getStarted')}</Link>
+                    <Link to="/auth">{t('getStarted')}</Link>
                   </Button>
                 )}
                 <Button asChild variant="outline" size="lg">

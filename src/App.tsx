@@ -11,6 +11,7 @@ import Reports from "./pages/Reports";
 import ReportDetail from "./pages/ReportDetail";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import About from "./pages/About";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/report/:id" element={<ReportDetail />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="*" element={<NotFound />} />

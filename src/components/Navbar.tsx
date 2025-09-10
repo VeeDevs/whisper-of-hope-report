@@ -50,11 +50,8 @@ export function Navbar() {
             </div>
           ) : (
             <div className="flex gap-2">
-              <Button asChild variant="outline">
-                <Link to="/login">{t('login')}</Link>
-              </Button>
               <Button asChild>
-                <Link to="/register">{t('register')}</Link>
+                <Link to="/auth">{t('auth.signIn')}</Link>
               </Button>
             </div>
           )}
