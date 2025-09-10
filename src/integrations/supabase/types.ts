@@ -14,7 +14,446 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_groups: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_private: boolean | null
+          last_activity: string | null
+          member_limit: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          last_activity?: string | null
+          member_limit?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          last_activity?: string | null
+          member_limit?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          edited_at: string | null
+          file_url: string | null
+          group_id: string | null
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          receiver_id: string | null
+          reply_to: string | null
+          sender_anonymous_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          edited_at?: string | null
+          file_url?: string | null
+          group_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          receiver_id?: string | null
+          reply_to?: string | null
+          sender_anonymous_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          file_url?: string | null
+          group_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          receiver_id?: string | null
+          reply_to?: string | null
+          sender_anonymous_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          anonymous_id: string
+          content: string
+          created_at: string
+          id: string
+          institution: string | null
+          moderation_status: string | null
+          report_id: string
+          sentiment_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anonymous_id: string
+          content: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          moderation_status?: string | null
+          report_id: string
+          sentiment_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anonymous_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          moderation_status?: string | null
+          report_id?: string
+          sentiment_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_files: {
+        Row: {
+          blurred_url: string
+          file_size: number
+          file_type: string
+          has_metadata: boolean | null
+          id: string
+          is_blurred: boolean | null
+          original_name: string
+          report_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          blurred_url: string
+          file_size: number
+          file_type: string
+          has_metadata?: boolean | null
+          id?: string
+          is_blurred?: boolean | null
+          original_name: string
+          report_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          blurred_url?: string
+          file_size?: number
+          file_type?: string
+          has_metadata?: boolean | null
+          id?: string
+          is_blurred?: boolean | null
+          original_name?: string
+          report_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_files_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          is_admin: boolean | null
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chat_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_options: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          text: string
+          votes: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          text: string
+          votes?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          text?: string
+          votes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_votes: {
+        Row: {
+          anonymous_id: string
+          created_at: string
+          id: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          anonymous_id: string
+          created_at?: string
+          id?: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          anonymous_id?: string
+          created_at?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          anonymous_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          institution: string | null
+          question: string
+          total_votes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anonymous_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          institution?: string | null
+          question: string
+          total_votes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anonymous_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          institution?: string | null
+          question?: string
+          total_votes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          anonymous_id: string
+          created_at: string
+          id: string
+          institution: string | null
+          last_check_in: string | null
+          updated_at: string
+          user_id: string
+          user_type: string | null
+          username: string
+        }
+        Insert: {
+          age?: number | null
+          anonymous_id: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          last_check_in?: string | null
+          updated_at?: string
+          user_id: string
+          user_type?: string | null
+          username: string
+        }
+        Update: {
+          age?: number | null
+          anonymous_id?: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          last_check_in?: string | null
+          updated_at?: string
+          user_id?: string
+          user_type?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          anonymous_id: string
+          content: string
+          created_at: string
+          id: string
+          institution: string | null
+          is_crisis_detected: boolean | null
+          moderation_status: string | null
+          sentiment_score: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anonymous_id: string
+          content: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          is_crisis_detected?: boolean | null
+          moderation_status?: string | null
+          sentiment_score?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anonymous_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          institution?: string | null
+          is_crisis_detected?: boolean | null
+          moderation_status?: string | null
+          sentiment_score?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
