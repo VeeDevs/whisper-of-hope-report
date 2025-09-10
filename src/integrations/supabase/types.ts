@@ -459,7 +459,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_poll_option_votes: {
+        Args: { option_id: string }
+        Returns: undefined
+      }
+      increment_poll_total_votes: {
+        Args: { poll_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
