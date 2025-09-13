@@ -18,6 +18,7 @@ export interface Report {
   content: string;
   createdAt: string;
   anonymousId: string;
+  userId: string; // Author's user ID
   institution?: string;
   comments: Comment[];
   isCrisisDetected?: boolean;

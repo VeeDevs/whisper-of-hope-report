@@ -4,6 +4,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useApp } from "@/context/AppContext";
 
 interface ReportCardProps {
   report: Report;
@@ -13,21 +15,23 @@ export function ReportCard({ report }: ReportCardProps) {
   const { id, title, content, createdAt, anonymousId, institution, comments, isCrisisDetected } = report;
   
   // Follow (listen closely) logic
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [loadingFollow, setLoadingFollow] = useState(false);
-  const { currentUser } = require("@/context/AppContext").useApp();
+  const { currentUser } = useApp();
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [loadingFollow, setLoadingFollow] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentUser) return;
-    const follows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    setIsFollowing(follows.some((f: any) => f.followerId === currentUser.id && f.followingId === report.userId));
+    type Follow = { followerId: string; followingId: string };
+    const follows: Follow[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    setIsFollowing(follows.some((f) => f.followerId === currentUser.id && f.followingId === report.userId));
   }, [currentUser, report.userId]);
 
   const handleFollow = () => {
     if (!currentUser) return;
     setLoadingFollow(true);
-    const follows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    if (!follows.some((f: any) => f.followerId === currentUser.id && f.followingId === report.userId)) {
+    type Follow = { id: string; followerId: string; followingId: string; createdAt: string };
+    const follows: Follow[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    if (!follows.some((f) => f.followerId === currentUser.id && f.followingId === report.userId)) {
       follows.push({
         id: Date.now().toString(),
         followerId: currentUser.id,

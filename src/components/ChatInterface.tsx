@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,9 +25,38 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  const loadChat = useCallback(() => {
+    if (!currentUser) return;
+
+    if (friendId) {
+      // Load direct chat
+      const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+      const partner = allUsers.find((user: User) => user.id === friendId);
+      setChatPartner(partner);
+      const allMessages = JSON.parse(localStorage.getItem('whisper_chat_messages') || '[]');
+      const chatMessages = allMessages.filter((msg: ChatMessage) => 
+        (msg.senderId === currentUser.id && msg.receiverId === friendId) ||
+        (msg.senderId === friendId && msg.receiverId === currentUser.id)
+      );
+      setMessages(chatMessages.sort((a: ChatMessage, b: ChatMessage) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      ));
+    } else if (groupId) {
+      // Load group chat
+      const allGroups = JSON.parse(localStorage.getItem('whisper_chat_groups') || '[]');
+      const group = allGroups.find((g: ChatGroup) => g.id === groupId);
+      setChatGroup(group);
+      const allMessages = JSON.parse(localStorage.getItem('whisper_chat_messages') || '[]');
+      const groupMessages = allMessages.filter((msg: ChatMessage) => msg.groupId === groupId);
+      setMessages(groupMessages.sort((a: ChatMessage, b: ChatMessage) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      ));
+    }
+  }, [currentUser, friendId, groupId]);
+
   useEffect(() => {
     loadChat();
-  }, [friendId, groupId, currentUser]);
+  }, [loadChat]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
