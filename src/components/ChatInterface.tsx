@@ -112,9 +112,9 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
     : `${chatGroup?.name || 'Group Chat'}`;
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between">
+    <Card className="h-[600px] max-h-[90vh] flex flex-col w-full max-w-md mx-auto md:max-w-lg lg:max-w-2xl rounded-none md:rounded-lg shadow-none md:shadow-md border md:border bg-white md:bg-card">
+      <CardHeader className="pb-3 sticky top-0 z-10 bg-white md:bg-card">
+        <CardTitle className="flex items-center justify-between text-base md:text-lg">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
             {chatTitle}
@@ -132,9 +132,9 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
           )}
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-4">
+
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+        <ScrollArea className="flex-1 px-2 md:px-4">
           <div className="space-y-4 py-4">
             {messages.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -150,7 +150,7 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
                   }`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-lg px-3 py-2 ${
+                    className={`max-w-[85vw] md:max-w-[70%] rounded-lg px-3 py-2 break-words ${
                       message.senderId === currentUser?.id
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
@@ -176,17 +176,19 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-        
-        <div className="border-t p-4">
-          <div className="flex gap-2">
+
+        <div className="border-t p-2 md:p-4 bg-white md:bg-card sticky bottom-0 z-10">
+          <div className="flex gap-2 items-center">
             <Input
+              className="flex-1 min-w-0 text-sm md:text-base py-2 md:py-2.5 px-2 md:px-3 rounded-full md:rounded-lg"
               placeholder="Type a message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               disabled={isLoading}
+              autoComplete="off"
             />
-            <Button onClick={sendMessage} disabled={!newMessage.trim() || isLoading}>
+            <Button className="px-3 py-2 md:px-4 md:py-2.5 rounded-full md:rounded-lg" onClick={sendMessage} disabled={!newMessage.trim() || isLoading}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
