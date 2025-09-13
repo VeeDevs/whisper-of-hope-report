@@ -52,9 +52,13 @@ export default function ReportDetail() {
             </CardTitle>
             <div className="text-sm text-muted-foreground">
               <div className="flex justify-between items-center">
-                <div>
-                  <span>{t('anonymousId')}: {report.anonymousId}</span>
-                  {report.institution && <span className="text-whisper-700 font-medium"> • {report.institution}</span>}
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">By {report.anonymousId}</span>
+                  {report.institution && (
+                    <span className="text-whisper-700 text-xs">
+                      📍 {report.institution}
+                    </span>
+                  )}
                 </div>
                 <span>{formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}</span>
               </div>
@@ -84,15 +88,19 @@ export default function ReportDetail() {
                   report.comments.map((comment) => (
                     <div key={comment.id} className="bg-muted p-4 rounded-md">
                       <div className="flex justify-between items-center mb-2">
-                        <div>
-                          <span className="font-medium">{t('anonymousId')}: {comment.anonymousId}</span>
-                          {comment.institution && <span className="text-whisper-700 text-sm ml-2">• {comment.institution}</span>}
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">By {comment.anonymousId}</span>
+                          {comment.institution && (
+                            <span className="text-whisper-700 text-xs">
+                              📍 {comment.institution}
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                         </span>
                       </div>
-                      <p>{comment.content}</p>
+                      <p className="text-sm">{comment.content}</p>
                     </div>
                   ))
                 ) : (

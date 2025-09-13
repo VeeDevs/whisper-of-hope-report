@@ -21,9 +21,13 @@ export function ReportCard({ report }: ReportCardProps) {
         </CardTitle>
         <div className="text-sm text-muted-foreground">
           <div className="flex justify-between items-center">
-            <div>
-              <span>By {anonymousId}</span>
-              {institution && <span className="text-whisper-700 font-medium"> • {institution}</span>}
+            <div className="flex flex-col gap-1">
+              <span className="font-medium">By {anonymousId}</span>
+              {institution && (
+                <span className="text-whisper-700 text-xs">
+                  📍 {institution}
+                </span>
+              )}
             </div>
             <span>{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</span>
           </div>
