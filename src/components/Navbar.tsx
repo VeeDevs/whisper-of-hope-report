@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/context/AppContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
+import { ThemeToggle } from "./ThemeToggle";
 import { Link } from "react-router-dom";
 import { Shield, MessageCircle } from "lucide-react";
 
@@ -35,6 +36,7 @@ export function Navbar() {
           </Link>
         </nav>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <LanguageSelector />
           {currentUser ? (
             <div className="flex items-center gap-4">
