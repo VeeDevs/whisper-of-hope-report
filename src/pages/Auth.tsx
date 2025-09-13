@@ -103,14 +103,14 @@ const Auth = () => {
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
-              <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
+              <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.email')}</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -120,7 +120,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t('auth.password')}</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -135,7 +135,7 @@ const Auth = () => {
                   </Alert>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t('auth.signingIn') : t('auth.signIn')}
+                  {loading ? t('signingIn') : t('signIn')}
                 </Button>
               </form>
             </TabsContent>
@@ -143,7 +143,7 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">{t('auth.email')}</Label>
+                  <Label htmlFor="signup-email">{t('email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -153,7 +153,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
+                  <Label htmlFor="signup-password">{t('password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -164,7 +164,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="username">{t('auth.username')}</Label>
+                  <Label htmlFor="username">{t('username')}</Label>
                   <Input
                     id="username"
                     type="text"
@@ -174,30 +174,30 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="institution">{t('auth.institution')}</Label>
+                  <Label htmlFor="institution">{t('institution')}</Label>
                   <Input
                     id="institution"
                     type="text"
                     value={institution}
                     onChange={(e) => setInstitution(e.target.value)}
-                    placeholder={t('auth.institutionPlaceholder')}
+                    placeholder={t('institutionPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="userType">{t('auth.userType')}</Label>
+                  <Label htmlFor="userType">{t('userType')}</Label>
                   <Select value={userType} onValueChange={(value: 'student' | 'working' | 'other') => setUserType(value)}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select user type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="student">{t('auth.student')}</SelectItem>
-                      <SelectItem value="working">{t('auth.working')}</SelectItem>
-                      <SelectItem value="other">{t('auth.other')}</SelectItem>
+                      <SelectItem value="student">{t('student')}</SelectItem>
+                      <SelectItem value="working">{t('working')}</SelectItem>
+                      <SelectItem value="other">{t('other')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="age">{t('auth.age')}</Label>
+                  <Label htmlFor="age">{t('age')}</Label>
                   <Input
                     id="age"
                     type="number"
@@ -213,7 +213,7 @@ const Auth = () => {
                   </Alert>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t('auth.signingUp') : t('auth.signUp')}
+                  {loading ? t('signingUp') : t('signUp')}
                 </Button>
               </form>
             </TabsContent>
