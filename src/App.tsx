@@ -8,7 +8,6 @@ import { AppProvider } from "./context/AppContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import Home from "./pages/Home";
-import { ParticleNetworkBackground } from "@/components/ParticleNetworkBackground";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
@@ -32,12 +31,11 @@ function AppContent() {
   const { darkMode } = useTheme();
   return (
     <TooltipProvider>
-      <ParticleNetworkBackground darkMode={darkMode} />
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <TermsModal />
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+  <div className={"min-h-screen flex flex-col bg-gradient-to-br " + (darkMode ? "from-gray-900 via-blue-950 to-gray-800" : "from-blue-50 via-white to-blue-100")} style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Routes>
               <Route path="/" element={<Home />} />
