@@ -1,73 +1,116 @@
-# Welcome to your Lovable project
+# Whisper of Hope - Project Description for GitHub
 
-## Project info
+Whisper of Hope - Mental Health Support Platform
+https://img.shields.io/badge/Project-Whisper%2520of%2520Hope-blue https://img.shields.io/badge/License-MIT-green https://img.shields.io/badge/Platform-Web-lightgrey https://img.shields.io/badge/Status-Live-brightgreen
 
-**URL**: https://lovable.dev/projects/c3f9f686-06e1-4cf3-95f8-181dbd237e22
+Whisper of Hope is a responsive web application designed to provide mental health resources, support, and hope to those in need. This platform offers a safe space for users to access information, find resources, and connect with supportive communities.
 
-## How can I edit this code?
+🌐 Live Site: https://whisper-of-hope-report-xmjd.vercel.app/
 
-There are several ways of editing your application.
 
-**Use Lovable**
+Here's a comprehensive project description for your Whisper of Hope website that you can use for GitHub:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c3f9f686-06e1-4cf3-95f8-181dbd237e22) and start prompting.
+```markdown
+# Whisper of Hope - Mental Health Support Platform
 
-Changes made via Lovable will be committed automatically to this repo.
+Whisper of Hope is a responsive web application designed to provide mental health resources, support, and hope to those in need. This platform offers a safe space for users to access information, find resources, and connect with supportive communities.
 
-**Use your preferred IDE**
+## Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Resource Library**: Curated collection of mental health articles and resources
+- **Support Network**: Information about support groups and helplines
+- **Crisis Resources**: Immediate help information for those in urgent need
+- **Community Stories**: Uplifting stories of recovery and hope
+- **Responsive Design**: Accessible on all devices from mobile to desktop
+- **Privacy-Focused**: Designed with user privacy and anonymity in mind
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Technology Stack
 
-Follow these steps:
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Framework**: No external frameworks (vanilla implementation)
+- **Hosting**: Deployed on Vercel
+- **Styling**: Custom CSS with responsive design principles
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Project Structure
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+whisper-of-hope/
+├── index.html          # Main page
+├── styles/             # CSS stylesheets
+│   └── main.css        # Main stylesheet
+├── scripts/            # JavaScript files
+│   └── main.js         # Main JavaScript functionality
+├── images/             # Image assets
+└── resources/          # Additional resource pages
+    ├── support.html    # Support resources
+    ├── stories.html    # Community stories
+    └── crisis.html     # Crisis resources
 ```
 
-**Edit a file directly in GitHub**
+## Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prerequisites
 
-**Use GitHub Codespaces**
+No special prerequisites needed. The site runs on any modern web browser.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Installation
 
-## What technologies are used for this project?
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/whisper-of-hope.git
+```
 
-This project is built with:
+2. Navigate to the project directory:
+```bash
+cd whisper-of-hope
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+3. Open `index.html` in your browser or use a local server:
+```bash
+# Using Python
+python -m http.server 8000
 
-## How can I deploy this project?
+# Using Node.js
+npx serve
+```
 
-Simply open [Lovable](https://lovable.dev/projects/c3f9f686-06e1-4cf3-95f8-181dbd237e22) and click on Share -> Publish.
+## Deployment
 
-## Can I connect a custom domain to my Lovable project?
+The site is deployed on Vercel. Any push to the main branch will automatically trigger a new deployment.
 
-Yes, you can!
+## Contributing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+We welcome contributions to improve Whisper of Hope. Please feel free to submit issues and enhancement requests.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Mental health organizations and resources referenced
+- Contributors who have shared their stories
+- Open source communities for inspiration and tools
+
+## Support
+
+If you are experiencing a mental health crisis, please contact emergency services or a crisis hotline immediately.
+
+---
+
+*Whisper of Hope - Because everyone deserves support on their mental health journey.*
+```
+
+This description includes:
+1. A clear project overview
+2. Key features
+3. Technology stack
+4. Project structure
+5. Installation instructions
+6. Deployment information
+7. Contributing guidelines
+8. License information
+9. Acknowledgments
+10. Support information
+
+You can customize this further based on your specific implementation details and goals for the project.
