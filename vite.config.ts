@@ -9,6 +9,27 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+          ],
+          supabase: ['@supabase/supabase-js'],
+          utils: ['date-fns', 'class-variance-authority', 'clsx', 'tailwind-merge'],
+        },
+        chunkSizeWarningLimit: 1000,
+      },
+    },
+    target: 'esnext',
+    minify: 'esbuild',
+  },
   plugins: [
     react(),
     mode === 'development' &&
