@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, MessageCircle, Search, Check, X, Eye, VolumeX } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useToast } from "@/hooks/use-toast";
 import { User, FriendRequest } from "@/types";
 
@@ -22,50 +22,51 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
   const [listenCloselyList, setListenCloselyList] = useState<User[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadFriends();
-    loadFriendRequests();
-    loadListenCloselyList();
-  }, [currentUser]);
+  type FollowEntry = { id: string; followerId: string; followingId: string; createdAt: string };
+  type BlockEntry = { id: string; blockerId: string; blockedId: string; createdAt: string };
 
-  const loadFriends = () => {
+  const loadFriends = useCallback(() => {
     if (!currentUser) return;
-    
-    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+    const allUsers: User[] = JSON.parse(localStorage.getItem('whisper_users') || '[]');
     const userFriends = currentUser.friends || [];
     const friendUsers = allUsers.filter((user: User) => userFriends.includes(user.id));
     setFriends(friendUsers);
-  };
+  }, [currentUser]);
 
-  const loadFriendRequests = () => {
+  const loadFriendRequests = useCallback(() => {
     if (!currentUser) return;
-    
-    const requests = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
+    const requests: FriendRequest[] = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
     const userRequests = requests.filter((req: FriendRequest) => 
       req.receiverId === currentUser.id && req.status === 'pending'
     );
     setFriendRequests(userRequests);
-  };
+  }, [currentUser]);
 
-  const loadListenCloselyList = () => {
+  const loadListenCloselyList = useCallback(() => {
     if (!currentUser) return;
-    
-    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-    const followingList = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const userFollowing = followingList.filter((follow: any) => follow.followerId === currentUser.id);
+    const allUsers: User[] = JSON.parse(localStorage.getItem('whisper_users') || '[]');
+    const followingList: FollowEntry[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
+    const userFollowing = followingList.filter((follow: FollowEntry) => follow.followerId === currentUser.id);
     const followingUsers = allUsers.filter((user: User) => 
-      userFollowing.some((follow: any) => follow.followingId === user.id)
+      userFollowing.some((follow: FollowEntry) => follow.followingId === user.id)
     );
     setListenCloselyList(followingUsers);
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    loadFriends();
+    loadFriendRequests();
+    loadListenCloselyList();
+  }, [currentUser, loadFriends, loadFriendRequests, loadListenCloselyList]);
 
   const searchUsers = () => {
     if (!searchQuery.trim() || !currentUser) return;
     
     const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
     const blockedUsers = JSON.parse(localStorage.getItem('whisper_silenced_voices') || '[]');
-    const userBlockedList = blockedUsers.filter((block: any) => block.blockerId === currentUser.id);
-    const blockedUserIds = userBlockedList.map((block: any) => block.blockedId);
+  type BlockEntry = { id: string; blockerId: string; blockedId: string; createdAt: string };
+  const userBlockedList = blockedUsers.filter((block: BlockEntry) => block.blockerId === currentUser.id);
+  const blockedUserIds = userBlockedList.map((block: BlockEntry) => block.blockedId);
     
     const results = allUsers.filter((user: User) => 
       user.id !== currentUser.id &&
@@ -113,7 +114,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     };
 
     const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const alreadyFollowing = existingFollows.some((follow: any) => 
+    const alreadyFollowing = existingFollows.some((follow: FollowEntry) => 
       follow.followerId === currentUser.id && follow.followingId === targetUserId
     );
 
@@ -175,7 +176,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
     if (!currentUser) return;
 
     const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const updatedFollows = existingFollows.filter((follow: any) => 
+    const updatedFollows = existingFollows.filter((follow: FollowEntry) => 
       !(follow.followerId === currentUser.id && follow.followingId === targetUserId)
     );
     localStorage.setItem('whisper_listen_closely', JSON.stringify(updatedFollows));

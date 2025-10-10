@@ -1,7 +1,7 @@
 
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { Link } from "react-router-dom";
 import { Shield, MessageCircle, Users } from "lucide-react";

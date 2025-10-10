@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -7,17 +6,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link, useNavigate } from "react-router-dom";
 import { findUserByUsername, setCurrentUser } from "@/services/storage";
 import { useToast } from "@/hooks/use-toast";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setCurrentUser: updateCurrentUser } = useApp();
   const { t } = useLanguage();
+
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,15 +96,24 @@ export default function Login() {
                 <label htmlFor="password" className="text-sm font-medium">
                   {t('password')}
                 </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t('enterPassword')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t('enterPassword')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? t('loggingIn') : t('logIn')}

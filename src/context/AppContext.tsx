@@ -1,28 +1,11 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import React, { useContext, ReactNode, useState, useEffect } from "react";
 import { User, Report, Poll, EvidenceFile } from "../types";
 import { useToast } from "@/hooks/use-toast";
 import { detectCrisisContent } from "@/utils/crisisDetection";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from '@supabase/supabase-js';
 
-interface AppContextType {
-  currentUser: User | null;
-  reports: Report[];
-  polls: Poll[];
-  isLoading: boolean;
-  session: Session | null;
-  setCurrentUser: (user: User) => void;
-  logout: () => void;
-  createReport: (title: string, content: string, evidenceFiles?: EvidenceFile[]) => Promise<boolean>;
-  addCommentToReport: (reportId: string, content: string) => Promise<boolean>;
-  createPoll: (question: string, options: string[], duration: number) => Promise<void>;
-  votePoll: (pollId: string, optionId: string) => Promise<void>;
-  scheduleCheckIn: () => void;
-  completeCheckIn: (response: 'better' | 'same' | 'worse') => void;
-  refreshReports: () => Promise<void>;
-}
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
+import { AppContext as CoreAppContext, AppContextType, Message } from './appContextCore';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -121,38 +104,80 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         .order('created_at', { ascending: false });
 
       if (reports) {
-        const formattedReports: Report[] = reports.map(report => ({
+        type DBReport = {
+          id: string;
+          title: string;
+          content: string;
+          created_at: string;
+          anonymous_id?: string;
+          user_id?: string;
+          institution?: string;
+          is_crisis_detected?: boolean;
+          sentiment_score?: number;
+          moderation_status?: string;
+          comments?: DBComment[];
+          evidence_files?: DBFile[];
+        };
+
+        type DBComment = {
+          id: string;
+          content: string;
+          created_at: string;
+          user_id?: string;
+          anonymous_id?: string;
+          report_id?: string;
+          institution?: string;
+          sentiment_score?: number;
+          moderation_status?: string;
+        };
+
+        type DBFile = {
+          id: string;
+          original_name?: string;
+          blurred_url?: string;
+          file_type?: string;
+          file_size?: number;
+          is_blurred?: boolean;
+          has_metadata?: boolean;
+          uploaded_at?: string;
+        };
+
+  const formattedReports: Report[] = (reports as DBReport[]).map(report => ({
           id: report.id,
           title: report.title,
           content: report.content,
           createdAt: report.created_at,
           anonymousId: report.anonymous_id,
+          userId: report.user_id,
           institution: report.institution,
-          isCrisisDetected: report.is_crisis_detected,
-          sentimentScore: report.sentiment_score,
-          moderationStatus: report.moderation_status as 'pending' | 'approved' | 'flagged' | 'rejected',
-          comments: report.comments.map((comment: any) => ({
+          isCrisisDetected: !!report.is_crisis_detected,
+          sentimentScore: report.sentiment_score ?? 0,
+          moderationStatus: (report.moderation_status as 'pending' | 'approved' | 'flagged' | 'rejected') ?? 'pending',
+          comments: (report.comments || []).map((comment: DBComment) => ({
             id: comment.id,
             content: comment.content,
             createdAt: comment.created_at,
-            anonymousId: comment.anonymous_id,
-            reportId: comment.report_id,
-            institution: comment.institution,
-            sentimentScore: comment.sentiment_score,
-            moderationStatus: comment.moderation_status as 'pending' | 'approved' | 'flagged' | 'rejected'
+            anonymousId: comment.anonymous_id || '',
+            reportId: comment.report_id || report.id,
+            institution: comment.institution || '',
+            sentimentScore: comment.sentiment_score ?? 0,
+            moderationStatus: (comment.moderation_status as 'pending' | 'approved' | 'flagged' | 'rejected') ?? 'pending'
           })),
-          evidenceFiles: report.evidence_files.map((file: any) => ({
-            id: file.id,
-            originalName: file.original_name,
-            blurredUrl: file.blurred_url,
-            type: file.file_type,
-            uploadedAt: file.uploaded_at,
-            metadata: {
-              size: file.file_size,
-              isBlurred: file.is_blurred,
-              hasMetadata: file.has_metadata
-            }
-          }))
+          evidenceFiles: (report.evidence_files || []).map((file: DBFile) => {
+            const t = file.file_type === 'image' ? 'image' : 'document';
+            return {
+              id: file.id,
+              originalName: file.original_name || '',
+              blurredUrl: file.blurred_url || '',
+              type: t as 'image' | 'document',
+              uploadedAt: file.uploaded_at || '',
+              metadata: {
+                size: file.file_size ?? 0,
+                isBlurred: !!file.is_blurred,
+                hasMetadata: !!file.has_metadata
+              }
+            } as EvidenceFile;
+          })
         }));
         setReports(formattedReports);
       }
@@ -185,7 +210,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           institution: poll.institution,
           expiresAt: poll.expires_at,
           totalVotes: poll.total_votes,
-          options: poll.poll_options.map((option: any) => ({
+          options: poll.poll_options.map((option: { id: string; text: string; votes: number }) => ({
             id: option.id,
             text: option.text,
             votes: option.votes
@@ -439,12 +464,79 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await loadReports();
   };
 
-  const value = {
+  const sendMessage = async (receiverId: string, content: string) => {
+    if (!currentUser) return;
+    
+    const message = {
+      content,
+      senderId: currentUser.id,
+      receiverId,
+      senderAnonymousId: currentUser.anonymousId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const { error } = await supabase.from('chat_messages').insert([{
+      content: message.content,
+      sender_id: message.senderId,
+      receiver_id: message.receiverId,
+      sender_anonymous_id: message.senderAnonymousId,
+      created_at: message.createdAt
+    }]);
+    
+    if (error) {
+      toast({
+        title: "Error sending message",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getMessages = async (otherUserId: string): Promise<Message[]> => {
+    if (!currentUser) return [];
+
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUser.id})`)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      toast({
+        title: "Error loading messages",
+        description: error.message,
+        variant: "destructive",
+      });
+      return [];
+    }
+
+    // Transform the data to match our Message interface
+    type DBMessage = {
+      id: string;
+      content: string;
+      sender_id: string;
+      receiver_id: string;
+      created_at: string;
+      sender_anonymous_id?: string;
+    };
+
+    return (data || []).map((msg: DBMessage) => ({
+      id: msg.id,
+      content: msg.content,
+      senderId: msg.sender_id,
+      receiverId: msg.receiver_id,
+      createdAt: msg.created_at,
+      senderAnonymousId: msg.sender_anonymous_id
+    }));
+  };
+
+  const value: AppContextType = {
     currentUser,
-    session,
     reports,
     polls,
     isLoading,
+    session,
+    supabase,
     setCurrentUser,
     logout,
     createReport,
@@ -454,15 +546,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     scheduleCheckIn,
     completeCheckIn,
     refreshReports,
+    sendMessage,
+    getMessages,
   };
-
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return <CoreAppContext.Provider value={value}>{children}</CoreAppContext.Provider>;
 };
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error("useApp must be used within an AppProvider");
-  }
-  return context;
-};
+// Note: useApp hook is provided from hooks/use-app.ts to avoid exporting non-component helpers from this file.

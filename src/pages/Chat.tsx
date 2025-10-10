@@ -6,7 +6,7 @@ import { GroupManager } from "@/components/GroupManager";
 import { ChatInterface } from "@/components/ChatInterface";
 import { StealthMode } from "@/components/StealthMode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { Navigate } from "react-router-dom";
 

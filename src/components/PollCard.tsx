@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 
 interface PollCardProps {
   poll: Poll;

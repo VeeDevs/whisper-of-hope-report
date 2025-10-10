@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface ThemeContextType {
+export interface ThemeContextType {
 	darkMode: boolean;
 	toggleTheme: () => void;
 }
@@ -27,8 +27,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 	);
 };
 
-export function useTheme() {
-	const ctx = useContext(ThemeContext);
-	if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-	return ctx;
-}
+// Note: useTheme hook moved to src/hooks/use-theme.ts to keep this file exporting only components.
+
+export { ThemeContext };

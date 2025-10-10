@@ -1,12 +1,13 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { LanguageProvider } from "./context/LanguageContext";
-import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
+
 import Home from "./pages/Home";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -24,39 +25,233 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
 
+const pageTransition = {
+  type: "spring" as const,
+  duration: 0.5,
+};
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Home />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Reports />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/report/:id"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <ReportDetail />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Register />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Login />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/auth"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Auth />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <About />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Chat />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Terms />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Privacy />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Contact />
+            </motion.div>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <motion.div
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <NotFound />
+            </motion.div>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 function AppContent() {
-  const { darkMode } = useTheme();
   return (
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <TermsModal />
+        {/* Animated background behind all content */}
         <div
-          className={"min-h-screen flex flex-col animated-gradient-bg" + (darkMode ? " dark" : "")}
+          className="animated-gradient-bg"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
+        {/* App content overlays the background */}
+        <div
+          className="min-h-screen flex flex-col"
           style={{
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
           }}
-  >
+        >
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/report/:id" element={<ReportDetail />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </div>
           <Footer />
         </div>
@@ -64,6 +259,7 @@ function AppContent() {
     </TooltipProvider>
   );
 }
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>

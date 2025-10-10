@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Send, Users, Plus, Settings } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, ChatGroup, User } from "@/types";
 

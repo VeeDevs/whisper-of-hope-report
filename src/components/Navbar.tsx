@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle } from "./ThemeToggle";

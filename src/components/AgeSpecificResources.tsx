@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Shield, Heart, BookOpen, Phone } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { AgeSpecificResource } from "@/types";
 
 const RESOURCES: AgeSpecificResource[] = [

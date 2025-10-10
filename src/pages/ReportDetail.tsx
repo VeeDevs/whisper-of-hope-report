@@ -1,7 +1,7 @@
 
 import { Navbar } from "@/components/Navbar";
 import { CommentForm } from "@/components/CommentForm";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -7,12 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link, useNavigate } from "react-router-dom";
 import { saveUser, setCurrentUser, findUserByUsername, generateUserId, generateAnonymousId } from "@/services/storage";
 import { useToast } from "@/hooks/use-toast";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState<'student' | 'working' | 'other'>('student');
   const [institution, setInstitution] = useState("");
   const [age, setAge] = useState("");
@@ -22,8 +24,20 @@ export default function Register() {
   const { setCurrentUser: updateCurrentUser } = useApp();
   const { t } = useLanguage();
 
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -105,18 +119,51 @@ export default function Register() {
                 <label htmlFor="password" className="text-sm font-medium">
                   {t('password')}
                 </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t('choosePassword')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t('choosePassword')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {t('passwordStoredLocally')}
                 </p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="confirm-password"
+                  className="text-sm font-medium">
+                  {t('confirmPassword')}
+                </label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t('confirmYourPassword')}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

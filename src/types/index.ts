@@ -25,6 +25,10 @@ export interface Report {
   sentimentScore?: number;
   moderationStatus?: 'pending' | 'approved' | 'flagged' | 'rejected';
   evidenceFiles?: EvidenceFile[];
+  userType?: 'student' | 'working' | 'other';
+  companyName?: string;
+  origin?: string; // Location/region of the user
+  isAnonymous?: boolean;
 }
 
 export interface Comment {

@@ -1,26 +1,48 @@
-/* Animated soft gradient background for app */
+/* ===== Enhanced Animated Background ===== */
 .animated-gradient-bg {
-  background: linear-gradient(120deg, #e0e7ff 0%, #f7e8ff 50%, #ffe5d9 100%);
-  background-size: 200% 200%;
-  animation: softGradientMove 20s ease-in-out infinite alternate;
+  background: linear-gradient(
+    135deg,
+    #f5e3e6,
+    #d9e4f5,
+    #e3fdf5,
+    #fde2e4
+  );
+  background-size: 600% 600%;
+  animation: gradientFlow 25s ease-in-out infinite;
 }
+
 .dark .animated-gradient-bg {
-  background: linear-gradient(120deg, #232946 0%, #5f6caf 50%, #a7a6c9 100%);
+  background: linear-gradient(
+    135deg,
+    #0d1b2a,
+    #1b263b,
+    #415a77,
+    #0d1b2a
+  );
+  background-size: 600% 600%;
+  animation: gradientFlow 25s ease-in-out infinite;
 }
-@keyframes softGradientMove {
+
+@keyframes gradientFlow {
   0% {
     background-position: 0% 50%;
   }
-  100% {
+  50% {
     background-position: 100% 50%;
   }
+  100% {
+    background-position: 0% 50%;
+  }
 }
+
+/* ===== General App Styling ===== */
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
+
 
 .logo {
   height: 6em;
