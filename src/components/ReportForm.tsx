@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { CrisisModal } from "./CrisisModal";
 import { EvidenceUpload } from "./EvidenceUpload";
 import { EvidenceFile } from "@/types";

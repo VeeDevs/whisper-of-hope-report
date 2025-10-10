@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/context/LanguageContext';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/hooks/use-app';
 
 const Auth = () => {
   const [email, setEmail] = useState('');

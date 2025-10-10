@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, MessageCircle, Settings, Crown } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { useToast } from "@/hooks/use-toast";
 import { ChatGroup } from "@/types";
 
@@ -25,11 +25,7 @@ export function GroupManager({ onSelectGroup }: GroupManagerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadGroups();
-  }, [currentUser]);
-
-  const loadGroups = () => {
+  const loadGroups = useCallback(() => {
     if (!currentUser) return;
     
     const allGroups = JSON.parse(localStorage.getItem('whisper_chat_groups') || '[]');
@@ -37,7 +33,11 @@ export function GroupManager({ onSelectGroup }: GroupManagerProps) {
       group.members.includes(currentUser.id)
     );
     setGroups(userGroups);
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    loadGroups();
+  }, [currentUser, loadGroups]);
 
   const createGroup = () => {
     if (!currentUser || !newGroupName.trim()) return;
@@ -137,7 +137,7 @@ export function GroupManager({ onSelectGroup }: GroupManagerProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Category</label>
-                  <Select value={newGroupCategory} onValueChange={(value: any) => setNewGroupCategory(value)}>
+                  <Select value={newGroupCategory} onValueChange={(value: 'support' | 'study' | 'general' | 'crisis') => setNewGroupCategory(value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

@@ -5,7 +5,10 @@ import { detectCrisisContent } from "@/utils/crisisDetection";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from '@supabase/supabase-js';
 
-import { AppContext as CoreAppContext, AppContextType, Message } from './appContextCore';
+import { AppContext, AppContextType, Message } from './appContextCore';
+
+// Re-export the AppContext
+export { AppContext };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -549,6 +552,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     sendMessage,
     getMessages,
   };
-  return <CoreAppContext.Provider value={value}>{children}</CoreAppContext.Provider>;
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 // Note: useApp hook is provided from hooks/use-app.ts to avoid exporting non-component helpers from this file.

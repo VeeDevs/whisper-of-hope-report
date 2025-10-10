@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Clock, Phone } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/hooks/use-app";
 import { formatDistanceToNow } from "date-fns";
 
 export function CheckInReminder() {
