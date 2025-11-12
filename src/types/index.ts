@@ -1,69 +1,64 @@
 
 export interface User {
   id: string;
+  user_id: string;
   username: string;
-  anonymousId: string;
-  createdAt: string;
+  anonymous_id: string;
+  created_at: string;
   institution?: string;
-  userType?: 'student' | 'working' | 'other';
+  user_type: 'student' | 'working' | 'other';
   age?: number;
-  lastCheckIn?: string;
-  friends?: string[]; // Array of user IDs
-  blockedUsers?: string[]; // Array of user IDs
+  last_check_in?: string;
 }
 
 export interface Report {
   id: string;
   title: string;
   content: string;
-  createdAt: string;
-  anonymousId: string;
-  userId: string; // Author's user ID
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  anonymous_id: string;
   institution?: string;
+  is_crisis_detected: boolean;
+  evidence_files: EvidenceFile[];
   comments: Comment[];
-  isCrisisDetected?: boolean;
-  sentimentScore?: number;
-  moderationStatus?: 'pending' | 'approved' | 'flagged' | 'rejected';
-  evidenceFiles?: EvidenceFile[];
-  userType?: 'student' | 'working' | 'other';
-  companyName?: string;
-  origin?: string; // Location/region of the user
-  isAnonymous?: boolean;
 }
 
 export interface Comment {
   id: string;
+  report_id: string;
+  user_id: string;
   content: string;
-  createdAt: string;
-  anonymousId: string;
-  reportId: string;
-  institution?: string;
-  sentimentScore?: number;
-  moderationStatus?: 'pending' | 'approved' | 'flagged' | 'rejected';
+  created_at: string;
+  anonymous_id: string;
 }
 
 export interface Poll {
   id: string;
   question: string;
-  options: PollOption[];
-  createdAt: string;
-  anonymousId: string;
+  user_id: string;
+  created_at: string;
+  expires_at: string;
+  anonymous_id: string;
   institution?: string;
-  expiresAt: string;
-  totalVotes: number;
+  total_votes: number;
+  options: PollOption[];
 }
 
 export interface PollOption {
   id: string;
+  poll_id: string;
   text: string;
   votes: number;
 }
 
 export interface PollVote {
-  pollId: string;
-  optionId: string;
-  anonymousId: string;
-  createdAt: string;
+  id: string;
+  poll_id: string;
+  user_id: string;
+  option_id: string;
+  created_at: string;
 }
 
 export interface EvidenceFile {

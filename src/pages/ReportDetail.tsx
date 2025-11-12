@@ -44,23 +44,23 @@ export default function ReportDetail() {
           {t('backToReports')}
         </Link>
         
-        <Card className={report.isCrisisDetected ? 'border-red-200 bg-red-50' : ''}>
+        <Card className={report.is_crisis_detected ? 'border-red-200 bg-red-50' : ''}>
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-2">
               {report.title}
-              {report.isCrisisDetected && <Heart className="h-5 w-5 text-red-500" />}
+              {report.is_crisis_detected && <Heart className="h-5 w-5 text-red-500" />}
             </CardTitle>
             <div className="text-sm text-muted-foreground">
               <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-1">
-                  <span className="font-medium">By {report.anonymousId}</span>
+                  <span className="font-medium">By {report.anonymous_id}</span>
                   {report.institution && (
                     <span className="text-whisper-700 text-xs">
                       📍 {report.institution}
                     </span>
                   )}
                 </div>
-                <span>{formatDistanceToNow(new Date(report.createdAt), { addSuffix: true })}</span>
+                <span>{formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}</span>
               </div>
             </div>
           </CardHeader>
@@ -89,15 +89,10 @@ export default function ReportDetail() {
                     <div key={comment.id} className="bg-muted p-4 rounded-md">
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex flex-col gap-1">
-                          <span className="font-medium text-sm">By {comment.anonymousId}</span>
-                          {comment.institution && (
-                            <span className="text-whisper-700 text-xs">
-                              📍 {comment.institution}
-                            </span>
-                          )}
+                          <span className="font-medium text-sm">By {comment.anonymous_id}</span>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                         </span>
                       </div>
                       <p className="text-sm">{comment.content}</p>

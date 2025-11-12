@@ -55,10 +55,11 @@ export default function Register() {
       // Create a new user
       const newUser = {
         id: generateUserId(),
+        user_id: '', // This will be set by the backend, but the type requires it.
         username,
-        anonymousId: generateAnonymousId(),
-        createdAt: new Date().toISOString(),
-        userType,
+        anonymous_id: generateAnonymousId(),
+        created_at: new Date().toISOString(),
+        user_type: userType,
         institution: institution.trim() || undefined,
         age: age ? parseInt(age) : undefined,
       };
@@ -72,7 +73,7 @@ export default function Register() {
 
       toast({
         title: "Registration successful!",
-        description: `Welcome to Whisper of Hope. Your anonymous ID is ${newUser.anonymousId}`,
+        description: `Welcome to Whisper of Hope. Your anonymous ID is ${newUser.anonymous_id}`,
       });
 
       // Redirect to reports page

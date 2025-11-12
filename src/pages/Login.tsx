@@ -49,7 +49,7 @@ export default function Login() {
 
       toast({
         title: "Login successful!",
-        description: `Welcome back! Your anonymous ID is ${user.anonymousId}`,
+        description: `Welcome back! Your anonymous ID is ${user.anonymous_id}`,
       });
 
       // Redirect to reports page

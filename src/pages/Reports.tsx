@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { ReportCard } from "@/components/ReportCard";
 import { ReportForm } from "@/components/ReportForm";
 import { PollForm } from "@/components/PollForm";
+import { ReportFeed } from "@/components/ReportFeed";
 import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Mousewheel, Pagination } from 'swiper/modules';
+import { Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Reports() {
-  const { reports, currentUser, session } = useApp();
+  const { currentUser, session, refreshReports } = useApp();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [showReportForm, setShowReportForm] = useState(false);
@@ -22,89 +20,81 @@ export default function Reports() {
   useEffect(() => {
     if (!session) {
       navigate('/auth');
+      return;
     }
-  }, [session, navigate]);
+    refreshReports();
+  }, [session, navigate, refreshReports]);
 
   return (
-    <div className="h-screen flex flex-col animated-gradient-bg">
+    <div className="min-h-screen flex flex-col animated-gradient-bg">
       <Navbar />
-      <main className="flex-1 relative">
-        <Swiper
-          direction={'vertical'}
-          slidesPerView={1}
-          spaceBetween={30}
-          mousewheel={true}
-          pagination={{
-            clickable: true,
-          }}
-          modules={[Mousewheel, Pagination]}
-          className="h-full"
-        >
-          {reports.length > 0 ? (
-            reports.map((report) => (
-              <SwiperSlide key={report.id} className="flex items-center justify-center p-4">
-                <ReportCard report={report} />
-              </SwiperSlide>
-            ))
-          ) : (
-            <SwiperSlide className="flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold mb-2">{t('noReportsYet')}</h2>
-                <p className="text-muted-foreground mb-6">
-                  {t('beFirstToShare')}
-                </p>
-                {currentUser && (
-                  <Button 
-                    onClick={() => setShowReportForm(true)}
-                    className="bg-whisper-600 hover:bg-whisper-700"
-                  >
-                    {t('createFirstReport')}
-                  </Button>
-                )}
-              </div>
-            </SwiperSlide>
-          )}
-        </Swiper>
-
-        {currentUser && (
-          <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-4">
-            <Button 
-              onClick={() => setShowReportForm(!showReportForm)}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-4 h-auto shadow-lg"
-            >
-              {showReportForm ? t('hide') : t('create')} {t('reports')}
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => setShowPollForm(!showPollForm)}
-              className="bg-white dark:bg-gray-800 rounded-full p-4 h-auto shadow-lg backdrop-blur-sm"
-            >
-              {showPollForm ? t('hide') : t('create')} {t('polls')}
-            </Button>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Community Stories</h1>
+              <p className="text-slate-600 mt-1">Share your experiences and support others</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowReportForm(true)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Share Story
+              </Button>
+            </div>
           </div>
-        )}
 
-        {showReportForm && currentUser && (
-            <div 
-              className="absolute inset-0 bg-black bg-opacity-20 backdrop-blur-sm flex items-center justify-center z-20"
-              onClick={() => setShowReportForm(false)}
-            >
-              <div className="bg-card p-8 rounded-lg w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-                <ReportForm />
-              </div>
-            </div>
-        )}
+          <Tabs defaultValue="reports" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="reports">Stories</TabsTrigger>
+              <TabsTrigger value="polls">Polls</TabsTrigger>
+            </TabsList>
 
-        {showPollForm && currentUser && (
-            <div 
-              className="absolute inset-0 bg-black bg-opacity-20 backdrop-blur-sm flex items-center justify-center z-20"
-              onClick={() => setShowPollForm(false)}
-            >
-              <div className="bg-card p-8 rounded-lg w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-                <PollForm />
+            <TabsContent value="reports" className="space-y-6">
+              {showReportForm && (
+                <div className="sticky top-0 z-50 bg-white p-4 rounded-lg shadow-lg mb-6">
+                  <ReportForm />
+                  <Button
+                    onClick={() => setShowReportForm(false)}
+                    variant="ghost"
+                    className="mt-2"
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
+              <ReportFeed />
+            </TabsContent>
+
+            <TabsContent value="polls" className="space-y-6">
+              {showPollForm && (
+                <div className="sticky top-0 z-50 bg-white p-4 rounded-lg shadow-lg mb-6">
+                  <PollForm />
+                  <Button
+                    onClick={() => setShowPollForm(false)}
+                    variant="ghost"
+                    className="mt-2"
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
+              <Button
+                onClick={() => setShowPollForm(true)}
+                variant="outline"
+                className="w-full mb-6"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Poll
+              </Button>
+              <div className="text-center py-12 bg-slate-50 rounded-lg">
+                <p className="text-slate-600">Polls feature coming soon</p>
               </div>
-            </div>
-        )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
     </div>
   );

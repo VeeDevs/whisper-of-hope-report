@@ -115,11 +115,12 @@ export function ChatModal({ isOpen, onClose, targetUserId, targetAnonymousId }: 
       content: newMessage,
       sender_id: currentUser.id,
       receiver_id: targetUserId,
-      sender_anonymous_id: currentUser.anonymousId,
+      sender_anonymous_id: currentUser.anonymous_id,
       created_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from('chat_messages').insert([message]);
+    const client = supabase as any;
+    const { error } = await client.from('chat_messages').insert([message]);
 
     if (!error) {
       setNewMessage("");

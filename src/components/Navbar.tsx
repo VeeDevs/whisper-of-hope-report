@@ -41,7 +41,7 @@ export function Navbar() {
           {currentUser ? (
             <div className="flex items-center gap-4">
               <div className="text-sm text-muted-foreground">
-                <div>{t('anonymousId')}: <span className="font-medium text-foreground">{currentUser.anonymousId}</span></div>
+                <div>{t('anonymousId')}: <span className="font-medium text-foreground">{currentUser.anonymous_id}</span></div>
                 {currentUser.institution && (
                   <div className="text-xs text-whisper-700">{currentUser.institution}</div>
                 )}

@@ -13,8 +13,8 @@ export function CheckInReminder() {
 
   useEffect(() => {
     // Check if user needs a check-in
-    if (currentUser?.lastCheckIn) {
-      const lastCheckIn = new Date(currentUser.lastCheckIn);
+    if (currentUser?.last_check_in) {
+      const lastCheckIn = new Date(currentUser.last_check_in);
       const daysSinceCheckIn = Math.floor((Date.now() - lastCheckIn.getTime()) / (1000 * 60 * 60 * 24));
       
       if (daysSinceCheckIn >= 3) {

@@ -22,7 +22,7 @@ export function PollCard({ poll, userVote }: PollCardProps) {
     }
   };
 
-  const isExpired = new Date(poll.expiresAt) < new Date();
+  const isExpired = new Date(poll.expires_at) < new Date();
   const hasVoted = !!userVote;
 
   return (
@@ -32,19 +32,19 @@ export function PollCard({ poll, userVote }: PollCardProps) {
         <div className="text-sm text-muted-foreground">
           <div className="flex justify-between items-center">
             <div>
-              <span>By {poll.anonymousId}</span>
+              <span>By {poll.anonymous_id}</span>
               {poll.institution && <span className="text-whisper-700 font-medium"> • {poll.institution}</span>}
             </div>
-            <span>{formatDistanceToNow(new Date(poll.createdAt), { addSuffix: true })}</span>
+            <span>{formatDistanceToNow(new Date(poll.created_at), { addSuffix: true })}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {poll.options.map((option) => {
-            const percentage = poll.totalVotes > 0 ? (option.votes / poll.totalVotes) * 100 : 0;
+            const percentage = poll.total_votes > 0 ? (option.votes / poll.total_votes) * 100 : 0;
             const isSelected = selectedOption === option.id;
-            const isUserChoice = userVote?.optionId === option.id;
+            const isUserChoice = userVote?.option_id === option.id;
 
             return (
               <div key={option.id} className="space-y-2">
@@ -82,7 +82,7 @@ export function PollCard({ poll, userVote }: PollCardProps) {
 
         <div className="mt-4 flex justify-between items-center">
           <span className="text-sm text-muted-foreground">
-            {poll.totalVotes} total votes
+            {poll.total_votes} total votes
           </span>
           {!hasVoted && !isExpired && (
             <Button 

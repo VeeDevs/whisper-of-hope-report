@@ -8,13 +8,14 @@ import { Users, UserPlus, MessageCircle, Search, Check, X, Eye, VolumeX } from "
 import { useApp } from "@/hooks/use-app";
 import { useToast } from "@/hooks/use-toast";
 import { User, FriendRequest } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 interface FriendsManagerProps {
   onSelectFriend?: (friendId: string) => void;
 }
 
 export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
-  const { currentUser } = useApp();
+  const { currentUser, session } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
@@ -22,221 +23,168 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
   const [listenCloselyList, setListenCloselyList] = useState<User[]>([]);
   const { toast } = useToast();
 
-  type FollowEntry = { id: string; followerId: string; followingId: string; createdAt: string };
-  type BlockEntry = { id: string; blockerId: string; blockedId: string; createdAt: string };
-
-  const loadFriends = useCallback(() => {
+  const loadFriends = useCallback(async () => {
     if (!currentUser) return;
-    const allUsers: User[] = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-    const userFriends = currentUser.friends || [];
-    const friendUsers = allUsers.filter((user: User) => userFriends.includes(user.id));
-    setFriends(friendUsers);
+    const { data, error } = await supabase
+      .from('friends')
+      .select('friend_id')
+      .eq('user_id', currentUser.user_id);
+
+    if (error) {
+      console.error("Error fetching friends:", error);
+      return;
+    }
+
+  const friendIds = (data as unknown as { friend_id: string }[]).map(f => f.friend_id);
+
+    const { data: friendProfiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('user_id', friendIds);
+
+    if (profileError) {
+      console.error("Error fetching friend profiles:", profileError);
+      return;
+    }
+    setFriends(friendProfiles as unknown as User[]);
   }, [currentUser]);
 
-  const loadFriendRequests = useCallback(() => {
+  const loadFriendRequests = useCallback(async () => {
     if (!currentUser) return;
-    const requests: FriendRequest[] = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
-    const userRequests = requests.filter((req: FriendRequest) => 
-      req.receiverId === currentUser.id && req.status === 'pending'
-    );
-    setFriendRequests(userRequests);
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select('*')
+      .eq('receiver_id', currentUser.user_id)
+      .eq('status', 'pending');
+    
+    if (error) {
+      console.error("Error fetching friend requests:", error);
+      return;
+    }
+    setFriendRequests(data as unknown as FriendRequest[]);
   }, [currentUser]);
 
-  const loadListenCloselyList = useCallback(() => {
-    if (!currentUser) return;
-    const allUsers: User[] = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-    const followingList: FollowEntry[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const userFollowing = followingList.filter((follow: FollowEntry) => follow.followerId === currentUser.id);
-    const followingUsers = allUsers.filter((user: User) => 
-      userFollowing.some((follow: FollowEntry) => follow.followingId === user.id)
-    );
-    setListenCloselyList(followingUsers);
-  }, [currentUser]);
+  const loadListenCloselyList = useCallback(async () => {
+    // This feature seems to be local-only for now.
+    // If it were in the DB, it would be loaded here.
+  }, []);
 
   useEffect(() => {
-    loadFriends();
-    loadFriendRequests();
-    loadListenCloselyList();
+    if (currentUser) {
+      loadFriends();
+      loadFriendRequests();
+      loadListenCloselyList();
+    }
   }, [currentUser, loadFriends, loadFriendRequests, loadListenCloselyList]);
 
-  const searchUsers = () => {
+  const searchUsers = async () => {
     if (!searchQuery.trim() || !currentUser) return;
     
-    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-    const blockedUsers = JSON.parse(localStorage.getItem('whisper_silenced_voices') || '[]');
-  type BlockEntry = { id: string; blockerId: string; blockedId: string; createdAt: string };
-  const userBlockedList = blockedUsers.filter((block: BlockEntry) => block.blockerId === currentUser.id);
-  const blockedUserIds = userBlockedList.map((block: BlockEntry) => block.blockedId);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('anonymous_id', `%${searchQuery.trim()}%`)
+      .neq('user_id', currentUser.user_id);
+
+    if (error) {
+      console.error("Error searching users:", error);
+      setSearchResults([]);
+      return;
+    }
+
+    const { data: currentFriends, error: friendsError } = await supabase
+      .from('friends')
+      .select('friend_id')
+      .eq('user_id', currentUser.user_id);
+
+    if (friendsError) {
+      console.error("Error fetching friends for search filter:", friendsError);
+      return;
+    }
+  const friendIds = (currentFriends as unknown as { friend_id: string }[]).map(f => f.friend_id);
     
-    const results = allUsers.filter((user: User) => 
-      user.id !== currentUser.id &&
-      !currentUser.friends?.includes(user.id) &&
-      !blockedUserIds.includes(user.id) &&
-      (user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       user.anonymousId.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-    setSearchResults(results);
+  const results = ((data || []) as unknown as { user_id: string }[]).filter(user => !friendIds.includes(user.user_id));
+    setSearchResults(results as unknown as User[]);
   };
 
-  const sendReachOut = (targetUserId: string, targetAnonymousId: string) => {
+  const sendReachOut = async (targetUserId: string, targetAnonymousId: string) => {
     if (!currentUser) return;
 
-    const newRequest: FriendRequest = {
-      id: Date.now().toString(),
-      senderId: currentUser.id,
-      senderAnonymousId: currentUser.anonymousId,
-      receiverId: targetUserId,
+    const client = supabase as any;
+    const { error } = await client.from('friend_requests').insert({
+      sender_id: currentUser.user_id,
+      receiver_id: targetUserId,
       status: 'pending',
-      createdAt: new Date().toISOString(),
-      message: `${currentUser.anonymousId} wants to offer support`
-    };
-
-    const existingRequests = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
-    existingRequests.push(newRequest);
-    localStorage.setItem('whisper_friend_requests', JSON.stringify(existingRequests));
-
-    toast({
-      title: "Reach out sent",
-      description: `Request sent to ${targetAnonymousId}`,
+      sender_anonymous_id: currentUser.anonymous_id,
     });
 
-    setSearchResults(prev => prev.filter(user => user.id !== targetUserId));
+    if (error) {
+      toast({ title: "Error sending request", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "Reach out sent",
+        description: `Request sent to ${targetAnonymousId}`,
+      });
+      setSearchResults(prev => prev.filter(user => user.user_id !== targetUserId));
+    }
   };
 
   const listenClosely = (targetUserId: string, targetAnonymousId: string) => {
     if (!currentUser) return;
-
-    const followEntry = {
-      id: Date.now().toString(),
-      followerId: currentUser.id,
-      followingId: targetUserId,
-      createdAt: new Date().toISOString()
-    };
-
-    const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const alreadyFollowing = existingFollows.some((follow: FollowEntry) => 
-      follow.followerId === currentUser.id && follow.followingId === targetUserId
-    );
-
-    if (alreadyFollowing) {
-      toast({
-        title: "Already listening closely",
-        description: `You are already listening closely to ${targetAnonymousId}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    existingFollows.push(followEntry);
-    localStorage.setItem('whisper_listen_closely', JSON.stringify(existingFollows));
-
-    loadListenCloselyList();
-
-    toast({
-      title: "Now listening closely",
-      description: `You are now listening closely to ${targetAnonymousId}`,
-    });
+    // This is a local-only feature for now.
+    toast({ title: "Listening Closely", description: `You are now listening closely to ${targetAnonymousId}` });
   };
 
   const silenceVoice = (targetUserId: string, targetAnonymousId: string) => {
     if (!currentUser) return;
-
-    const blockEntry = {
-      id: Date.now().toString(),
-      blockerId: currentUser.id,
-      blockedId: targetUserId,
-      createdAt: new Date().toISOString()
-    };
-
-    const existingBlocks = JSON.parse(localStorage.getItem('whisper_silenced_voices') || '[]');
-    existingBlocks.push(blockEntry);
-    localStorage.setItem('whisper_silenced_voices', JSON.stringify(existingBlocks));
-
-    // Remove from friends if they are friends
-    const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-    const currentUserIndex = allUsers.findIndex((user: User) => user.id === currentUser.id);
-    if (currentUserIndex !== -1) {
-      allUsers[currentUserIndex].friends = (allUsers[currentUserIndex].friends || []).filter((id: string) => id !== targetUserId);
-      localStorage.setItem('whisper_users', JSON.stringify(allUsers));
-      localStorage.setItem('whisper_current_user', JSON.stringify(allUsers[currentUserIndex]));
-    }
-
-    // Remove from search results and refresh lists
-    setSearchResults(prev => prev.filter(user => user.id !== targetUserId));
-    loadFriends();
-    loadListenCloselyList();
-
-    toast({
-      title: "Voice silenced",
-      description: `${targetAnonymousId} has been silenced`,
-    });
+    // This is a local-only feature for now.
+    toast({ title: "Voice Silenced", description: `${targetAnonymousId} has been silenced.` });
   };
 
   const stopListeningClosely = (targetUserId: string, targetAnonymousId: string) => {
     if (!currentUser) return;
-
-    const existingFollows = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    const updatedFollows = existingFollows.filter((follow: FollowEntry) => 
-      !(follow.followerId === currentUser.id && follow.followingId === targetUserId)
-    );
-    localStorage.setItem('whisper_listen_closely', JSON.stringify(updatedFollows));
-
-    loadListenCloselyList();
-
-    toast({
-      title: "Stopped listening closely",
-      description: `No longer listening closely to ${targetAnonymousId}`,
-    });
+    // This is a local-only feature for now.
+    toast({ title: "Stopped Listening", description: `You are no longer listening to ${targetAnonymousId}.` });
   };
 
-  const handleReachOutRequest = (requestId: string, action: 'accept' | 'reject') => {
+  const handleReachOutRequest = async (request: FriendRequest, action: 'accept' | 'reject') => {
     if (!currentUser) return;
 
-    const requests = JSON.parse(localStorage.getItem('whisper_friend_requests') || '[]');
-    const requestIndex = requests.findIndex((req: FriendRequest) => req.id === requestId);
-    
-    if (requestIndex === -1) return;
-
-    const request = requests[requestIndex];
-    requests[requestIndex].status = action === 'accept' ? 'accepted' : 'rejected';
-    localStorage.setItem('whisper_friend_requests', JSON.stringify(requests));
-
+    const client = supabase as any;
     if (action === 'accept') {
-      // Add to friends list
-      const allUsers = JSON.parse(localStorage.getItem('whisper_users') || '[]');
-      
-      // Update current user's friends
-      const currentUserIndex = allUsers.findIndex((user: User) => user.id === currentUser.id);
-      if (currentUserIndex !== -1) {
-        allUsers[currentUserIndex].friends = [...(allUsers[currentUserIndex].friends || []), request.senderId];
+      const { error: friendError } = await client.from('friends').insert([
+  { user_id: request.senderId, friend_id: request.receiverId },
+  { user_id: request.receiverId, friend_id: request.senderId },
+      ]);
+
+      if (friendError) {
+        toast({ title: "Error accepting request", description: friendError.message, variant: "destructive" });
+        return;
       }
-
-      // Update sender's friends
-      const senderIndex = allUsers.findIndex((user: User) => user.id === request.senderId);
-      if (senderIndex !== -1) {
-        allUsers[senderIndex].friends = [...(allUsers[senderIndex].friends || []), currentUser.id];
-      }
-
-      localStorage.setItem('whisper_users', JSON.stringify(allUsers));
-      
-      // Update current user in localStorage
-      const updatedCurrentUser = allUsers[currentUserIndex];
-      localStorage.setItem('whisper_current_user', JSON.stringify(updatedCurrentUser));
-
-      loadFriends();
-      
-      toast({
-        title: "Support connection accepted",
-        description: `You are now connected with ${request.senderAnonymousId}`,
-      });
-    } else {
-      toast({
-        title: "Reach out declined",
-        description: "The request has been declined",
-      });
     }
 
-    loadFriendRequests();
+    const { error: updateError } = await client
+      .from('friend_requests')
+      .update({ status: action })
+      .eq('id', request.id);
+
+    if (updateError) {
+      toast({ title: "Error updating request", description: updateError.message, variant: "destructive" });
+    } else {
+      if (action === 'accept') {
+        toast({
+          title: "Support connection accepted",
+          description: `You are now connected with ${request.senderAnonymousId}`,
+        });
+      } else {
+        toast({
+          title: "Reach out declined",
+          description: "The request has been declined",
+        });
+      }
+      loadFriends();
+      loadFriendRequests();
+    }
   };
 
   return (
@@ -274,7 +222,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                 {friends.map((friend) => (
                   <div key={friend.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{friend.anonymousId}</p>
+                      <p className="font-medium">{friend.anonymous_id}</p>
                       <p className="text-sm text-muted-foreground">{friend.institution}</p>
                     </div>
                     <div className="flex gap-2">
@@ -289,7 +237,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => silenceVoice(friend.id, friend.anonymousId)}
+                        onClick={() => silenceVoice(friend.id, friend.anonymous_id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <VolumeX className="h-4 w-4" />
@@ -312,21 +260,21 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                 {listenCloselyList.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{user.anonymousId}</p>
+                      <p className="font-medium">{user.anonymous_id}</p>
                       <p className="text-sm text-muted-foreground">{user.institution}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => stopListeningClosely(user.id, user.anonymousId)}
+                        onClick={() => stopListeningClosely(user.id, user.anonymous_id)}
                       >
                         Stop Listening
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => silenceVoice(user.id, user.anonymousId)}
+                        onClick={() => silenceVoice(user.id, user.anonymous_id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <VolumeX className="h-4 w-4" />
@@ -356,14 +304,14 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                 {searchResults.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{user.anonymousId}</p>
+                      <p className="font-medium">{user.anonymous_id}</p>
                       <p className="text-sm text-muted-foreground">{user.institution}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => sendReachOut(user.id, user.anonymousId)}
+                        onClick={() => sendReachOut(user.id, user.anonymous_id)}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
                         Offer Support
@@ -371,7 +319,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => listenClosely(user.id, user.anonymousId)}
+                        onClick={() => listenClosely(user.id, user.anonymous_id)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Listen Closely
@@ -379,7 +327,7 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => silenceVoice(user.id, user.anonymousId)}
+                        onClick={() => silenceVoice(user.id, user.anonymous_id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <VolumeX className="h-4 w-4" />
@@ -409,14 +357,14 @@ export function FriendsManager({ onSelectFriend }: FriendsManagerProps) {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleReachOutRequest(request.id, 'accept')}
+                        onClick={() => handleReachOutRequest(request, 'accept')}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleReachOutRequest(request.id, 'reject')}
+                        onClick={() => handleReachOutRequest(request, 'reject')}
                       >
                         <X className="h-4 w-4" />
                       </Button>

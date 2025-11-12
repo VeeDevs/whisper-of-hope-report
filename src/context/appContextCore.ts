@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { User, Report, Poll, EvidenceFile } from '../types';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
 export interface Message {
@@ -12,12 +12,20 @@ export interface Message {
   senderAnonymousId: string;
 }
 
+import { UserRewards } from '@/types/rewards';
+import { Database } from '@/types/supabase';
+
+type Notification = Database['public']['Tables']['notifications']['Row'];
+
 export interface AppContextType {
   currentUser: User | null;
   reports: Report[];
   polls: Poll[];
   isLoading: boolean;
   session: Session | null;
+  userRewards: UserRewards | null;
+  notifications: Notification[];
+  unreadNotifications: number;
   supabase: typeof supabase;
   setCurrentUser: (user: User) => void;
   logout: () => void;
@@ -28,8 +36,37 @@ export interface AppContextType {
   scheduleCheckIn: () => void;
   completeCheckIn: (response: 'better' | 'same' | 'worse') => void;
   refreshReports: () => Promise<void>;
+  refreshPolls: () => Promise<void>;
   sendMessage: (receiverId: string, content: string) => Promise<void>;
   getMessages: (otherUserId: string) => Promise<Message[]>;
+  awardPoints: (points: number, reason: string) => Promise<void>;
+  markNotificationRead: (notificationId: string) => Promise<void>;
+  checkDailyStreak: () => Promise<void>;
 }
 
-export const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType>({
+  currentUser: null,
+  reports: [],
+  polls: [],
+  isLoading: true,
+  session: null,
+  userRewards: null,
+  notifications: [],
+  unreadNotifications: 0,
+  supabase,
+  setCurrentUser: () => {},
+  logout: async () => {},
+  createReport: async () => false,
+  addCommentToReport: async () => false,
+  createPoll: async () => {},
+  votePoll: async () => {},
+  scheduleCheckIn: () => {},
+  completeCheckIn: () => {},
+  refreshReports: async () => {},
+  sendMessage: async () => {},
+  getMessages: async () => [],
+  refreshPolls: async () => {},
+  markNotificationRead: async () => {},
+  checkDailyStreak: async () => {},
+  awardPoints: async () => {}
+});

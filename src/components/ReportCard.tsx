@@ -14,31 +14,33 @@ interface ReportCardProps {
 }
 
 export function ReportCard({ report }: ReportCardProps) {
-  const { id, title, content, createdAt, anonymousId, institution, comments, isCrisisDetected, userType, companyName } = report;
+  const { id, title, content, created_at, anonymous_id, institution, comments, is_crisis_detected } = report;
   
-  // Follow (listen closely) logic
-  const { currentUser, supabase } = useApp();
+  const { currentUser, addCommentToReport, refreshReports } = useApp();
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [loadingFollow, setLoadingFollow] = useState<boolean>(false);
   const [showChatModal, setShowChatModal] = useState<boolean>(false);
+  const [showCommentForm, setShowCommentForm] = useState<boolean>(false);
+  const [newComment, setNewComment] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentUser) return;
     type Follow = { followerId: string; followingId: string };
     const follows: Follow[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    setIsFollowing(follows.some((f) => f.followerId === currentUser.id && f.followingId === report.userId));
-  }, [currentUser, report.userId]);
+    setIsFollowing(follows.some((f) => f.followerId === currentUser.id && f.followingId === report.user_id));
+  }, [currentUser, report.user_id]);
 
   const handleFollow = () => {
     if (!currentUser) return;
     setLoadingFollow(true);
     type Follow = { id: string; followerId: string; followingId: string; createdAt: string };
     const follows: Follow[] = JSON.parse(localStorage.getItem('whisper_listen_closely') || '[]');
-    if (!follows.some((f) => f.followerId === currentUser.id && f.followingId === report.userId)) {
+    if (!follows.some((f) => f.followerId === currentUser.id && f.followingId === report.user_id)) {
       follows.push({
         id: Date.now().toString(),
         followerId: currentUser.id,
-        followingId: report.userId,
+        followingId: report.user_id,
         createdAt: new Date().toISOString()
       });
       localStorage.setItem('whisper_listen_closely', JSON.stringify(follows));
@@ -47,42 +49,49 @@ export function ReportCard({ report }: ReportCardProps) {
     setLoadingFollow(false);
   };
 
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !newComment.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      await addCommentToReport(id, newComment);
+      setNewComment('');
+      setShowCommentForm(false);
+      await refreshReports();
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <Card className={`hover:border-whisper-300 transition-colors ${isCrisisDetected ? 'border-red-200 bg-red-50' : ''}`}>
+    <Card className={`hover:border-whisper-300 transition-colors ${is_crisis_detected ? 'border-red-200 bg-red-50' : ''}`}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           {title}
-          {isCrisisDetected && <Heart className="h-4 w-4 text-red-500" />}
+          {is_crisis_detected && <Heart className="h-4 w-4 text-red-500" />}
         </CardTitle>
         <div className="text-sm text-muted-foreground">
           <div className="flex justify-between items-center">
             <div className="flex flex-col gap-1">
               <span className="font-medium flex items-center gap-2">
                 <span>
-                  By {report.isAnonymous ? anonymousId : `@${anonymousId}`}
-                  {report.origin && (
-                    <span className="text-whisper-500 text-xs ml-1">
-                      from {report.origin}
-                    </span>
-                  )}
+                  By {`@${anonymous_id}`}
                 </span>
-                {userType === 'student' && institution && (
+                {institution && (
                   <span className="text-whisper-700 text-xs bg-whisper-50 px-2 py-1 rounded-full">
                     📚 {institution}
                   </span>
                 )}
-                {userType === 'working' && companyName && (
-                  <span className="text-whisper-700 text-xs bg-whisper-50 px-2 py-1 rounded-full">
-                    💼 {companyName}
-                  </span>
-                )}
               </span>
             </div>
-            <span>{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</span>
+            <span>{formatDistanceToNow(new Date(created_at), { addSuffix: true })}</span>
           </div>
         </div>
         {/* Follow button */}
-        {currentUser && report.userId !== currentUser.id && (
+        {currentUser && report.user_id !== currentUser.id && (
           <button
             className={`mt-2 px-3 py-1 rounded text-xs font-medium border ${isFollowing ? 'bg-green-100 text-green-700 border-green-300' : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'} transition`}
             onClick={handleFollow}
@@ -100,7 +109,7 @@ export function ReportCard({ report }: ReportCardProps) {
           <span className="text-sm text-muted-foreground">
             {comments.length} {comments.length === 1 ? "comment" : "comments"}
           </span>
-          {currentUser && report.userId !== currentUser.id && (
+          {currentUser && report.user_id !== currentUser.id && (
             <button
               onClick={() => setShowChatModal(true)}
               className="text-sm text-whisper-600 hover:text-whisper-700 transition-colors flex items-center gap-1"
@@ -121,10 +130,10 @@ export function ReportCard({ report }: ReportCardProps) {
       <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Chat with {report.isAnonymous ? anonymousId : `@${anonymousId}`}</DialogTitle>
+            <DialogTitle>Chat with {`@${anonymous_id}`}</DialogTitle>
           </DialogHeader>
           <div className="flex-1">
-            {currentUser && <ChatInterface friendId={report.userId} />}
+            {currentUser && <ChatInterface friendId={report.user_id} />}
           </div>
         </DialogContent>
       </Dialog>

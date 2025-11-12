@@ -68,7 +68,7 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
     const message: ChatMessage = {
       id: Date.now().toString(),
       senderId: currentUser.id,
-      senderAnonymousId: currentUser.anonymousId,
+      senderAnonymousId: currentUser.anonymous_id,
       receiverId: friendId,
       groupId: groupId,
       content: newMessage.trim(),
@@ -96,7 +96,7 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
 
     toast({
       title: "Message sent",
-      description: friendId ? `Message sent to ${chatPartner?.anonymousId}` : `Message sent to ${chatGroup?.name}`,
+      description: friendId ? `Message sent to ${chatPartner?.anonymous_id}` : `Message sent to ${chatGroup?.name}`,
     });
   };
 
@@ -106,7 +106,7 @@ export function ChatInterface({ friendId, groupId }: ChatInterfaceProps) {
   };
 
   const chatTitle = friendId 
-    ? `Chat with ${chatPartner?.anonymousId || 'Unknown'}`
+    ? `Chat with ${chatPartner?.anonymous_id || 'Unknown'}`
     : `${chatGroup?.name || 'Group Chat'}`;
 
   return (
