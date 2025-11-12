@@ -11,19 +11,21 @@ import { Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Reports() {
-  const { currentUser, session, refreshReports } = useApp();
+  const { currentUser, session, refreshReports, isLoading } = useApp();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [showReportForm, setShowReportForm] = useState(false);
   const [showPollForm, setShowPollForm] = useState(false);
 
   useEffect(() => {
-    if (!session) {
+    if (!isLoading && !session) {
       navigate('/auth');
       return;
     }
-    refreshReports();
-  }, [session, navigate, refreshReports]);
+    if (session) {
+      refreshReports();
+    }
+  }, [session, isLoading, navigate, refreshReports]);
 
   return (
     <div className="min-h-screen flex flex-col animated-gradient-bg">

@@ -116,8 +116,8 @@ export const ReportFeed: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20">
-      {displayReports.length === 0 ? (
+    <div className="w-full space-y-6 pb-20 overflow-hidden">
+      {displayReports && displayReports.length === 0 ? (
         <Card className="bg-gradient-to-br from-slate-50 to-slate-100">
           <CardContent className="pt-12 text-center">
             <div className="space-y-4">
