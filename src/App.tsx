@@ -7,6 +7,7 @@ import { AppProvider } from "./context/AppContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabaseError } from "./lib/supabase";
 
 import Home from "./pages/Home";
 import Terms from "./pages/Terms";
@@ -226,6 +227,17 @@ function AnimatedRoutes() {
 function AppContent() {
   return (
     <TooltipProvider>
+      {/* Show fallback banner if Supabase is not configured */}
+      {supabaseError && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-red-100 border-b border-red-300 p-4 text-center">
+          <p className="text-red-800 font-semibold">
+            ⚠️ Backend Configuration Missing
+          </p>
+          <p className="text-red-700 text-sm mt-1">
+            The app requires Supabase environment variables. Some features may not work. Please contact support.
+          </p>
+        </div>
+      )}
       <Toaster />
       <Sonner />
       <BrowserRouter>
