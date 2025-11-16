@@ -9,7 +9,11 @@ import { CrisisModal } from "./CrisisModal";
 import { EvidenceUpload } from "./EvidenceUpload";
 import { EvidenceFile } from "@/types";
 
-export function ReportForm() {
+interface ReportFormProps {
+  onSuccess?: () => void;
+}
+
+export function ReportForm({ onSuccess }: ReportFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [evidenceFiles, setEvidenceFiles] = useState<EvidenceFile[]>([]);
@@ -27,6 +31,8 @@ export function ReportForm() {
       if (isCrisis) {
         setShowCrisisModal(true);
       }
+      
+      onSuccess?.();
     }
   };
   

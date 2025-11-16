@@ -4,18 +4,20 @@ import { Navbar } from "@/components/Navbar";
 import { FriendsManager } from "@/components/FriendsManager";
 import { GroupManager } from "@/components/GroupManager";
 import { ChatInterface } from "@/components/ChatInterface";
+import { AITherapist } from "@/components/AITherapist";
 import { StealthMode } from "@/components/StealthMode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { Navigate } from "react-router-dom";
+import { Brain } from "lucide-react";
 
 export default function Chat() {
   const { currentUser } = useApp();
   const { t } = useLanguage();
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("network");
+  const [activeTab, setActiveTab] = useState("therapist");
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -34,25 +36,34 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100">
       <Navbar />
-      <main className="flex-1 container py-8">
+      <main className="flex-1 container py-4 md:py-8 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">{t('connectSupport')}</h1>
-            <p className="text-muted-foreground">
-              {t('buildSupportNetwork')}
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('connectSupport') || 'Mental Health Support'}</h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              {t('buildSupportNetwork') || 'Connect with support resources, friends, and professional guidance'}
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="network">{t('supportNetwork')}</TabsTrigger>
-              <TabsTrigger value="groups">{t('discussionGroups')}</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
+              <TabsTrigger value="therapist" className="flex items-center gap-1 md:gap-2">
+                <Brain className="w-4 h-4" />
+                <span className="hidden sm:inline">AI Therapist</span>
+                <span className="sm:hidden">AI</span>
+              </TabsTrigger>
+              <TabsTrigger value="network">{t('supportNetwork') || 'Network'}</TabsTrigger>
+              <TabsTrigger value="groups" className="hidden md:flex">{t('discussionGroups') || 'Groups'}</TabsTrigger>
               <TabsTrigger value="chat" disabled={!selectedFriend && !selectedGroup}>
-                {t('chat')}
+                {t('chat') || 'Chat'}
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="therapist" className="mt-6">
+              <AITherapist />
+            </TabsContent>
 
             <TabsContent value="network" className="mt-6">
               <FriendsManager onSelectFriend={handleSelectFriend} />
@@ -71,7 +82,7 @@ export default function Chat() {
               )}
               {!selectedFriend && !selectedGroup && (
                 <div className="text-center py-12 text-muted-foreground">
-                  <p>{t('selectConnection')}</p>
+                  <p>{t('selectConnection') || 'Select a connection to start chatting'}</p>
                 </div>
               )}
             </TabsContent>

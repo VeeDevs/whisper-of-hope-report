@@ -7,7 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/hooks/use-app";
 import { Plus, X } from "lucide-react";
 
-export function PollForm() {
+interface PollFormProps {
+  onSuccess?: () => void;
+}
+
+export function PollForm({ onSuccess }: PollFormProps) {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [duration, setDuration] = useState("7"); // days
@@ -38,6 +42,7 @@ export function PollForm() {
       setQuestion("");
       setOptions(["", ""]);
       setDuration("7");
+      onSuccess?.();
     }
   };
 
