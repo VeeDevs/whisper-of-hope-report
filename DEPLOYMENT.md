@@ -68,6 +68,25 @@ VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
+### Vercel (Recommended) — Add environment variables
+
+1. Open your project in the Vercel dashboard: https://vercel.com/dashboard
+2. Select the `whisper-of-hope-report` project.
+3. Go to **Settings** → **Environment Variables**.
+4. Add the following variables (for each: set the same name, paste the value, and set the environment to `Production` and `Preview` as needed):
+
+```text
+VITE_SUPABASE_URL    -> https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY -> <your anon key from Supabase>
+```
+
+5. Click **Save**. Vercel will trigger a new deployment automatically.
+
+Notes:
+- Do NOT commit secret keys to the repository. Use `.env.example` (included) as a template only.
+- The `VITE_` prefix is required for Vite to expose variables to the client bundle at build time.
+- After the deployment finishes, visit your site to confirm the warning banner disappears and features (Auth, Chat, Reports) function normally.
+
 ## 📱 Device Testing Checklist
 
 ### Mobile Testing (320px - 640px)
