@@ -2,7 +2,7 @@ import React, { useContext, ReactNode, useState, useEffect, useCallback } from "
 import { User, Report, Poll, EvidenceFile, Comment } from "../types";
 import { useToast } from "@/hooks/use-toast";
 import { detectCrisisContent } from "@/utils/crisisDetection";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseError } from "@/lib/supabase";
 import type { Session } from '@supabase/supabase-js';
 import { rewardsService } from '@/services/rewards';
 import { UserRewards } from '@/types/rewards';
@@ -25,6 +25,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping profile fetch');
+      return;
+    }
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -63,6 +67,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const loadNotifications = useCallback(async (userId: string) => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping notifications fetch');
+      return;
+    }
     try {
       const { data: notifications, error } = await supabase
         .from('notifications')
@@ -79,6 +87,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase client not available - skipping auth initialization');
+      setIsLoading(false);
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -134,6 +148,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     evidenceFiles?: EvidenceFile[]
   ): Promise<boolean> => {
     if (!currentUser) return false;
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot create report');
+      return false;
+    }
 
     try {
       const client = supabase as any;
@@ -164,6 +182,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const addCommentToReport = async (reportId: string, content: string): Promise<boolean> => {
     if (!currentUser) return false;
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot add comment');
+      return false;
+    }
 
     try {
       const client = supabase as any;
@@ -244,6 +266,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const votePoll = async (pollId: string, optionId: string): Promise<void> => {
     if (!currentUser) return;
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot vote on poll');
+      return;
+    }
 
     try {
       const client = supabase as any;
@@ -287,6 +313,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const markNotificationRead = async (notificationId: string): Promise<void> => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot mark notification as read');
+      return;
+    }
     try {
       const client = supabase as any;
       await client.from('notifications').update({ read: true }).eq('id', notificationId);
@@ -300,6 +330,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loadReports = async () => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping reports fetch');
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('reports')
@@ -315,6 +349,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loadPolls = async () => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping polls fetch');
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('polls')
@@ -331,7 +369,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
       setCurrentUser(null);
       setSession(null);
       toast({
@@ -370,6 +410,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const sendMessage = async (receiverId: string, content: string) => {
     if (!currentUser) return;
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot send message');
+      return;
+    }
     
     const messageData = {
       content,
@@ -392,6 +436,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const getMessages = async (otherUserId: string): Promise<Message[]> => {
     if (!currentUser) return [];
+
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - cannot fetch messages');
+      return [];
+    }
 
     const { data, error } = await supabase
       .from('chat_messages')
