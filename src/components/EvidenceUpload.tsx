@@ -20,6 +20,15 @@ export function EvidenceUpload({ onFilesUploaded, maxFiles = 5 }: EvidenceUpload
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const VIOLENCE_KEYWORDS = ['violence','assault','rape','blood','kill','murder','abuse','brutal','slaughter','attack'];
+
+  const detectViolentMedia = (file: File) => {
+    const name = file.name.toLowerCase();
+    if (VIOLENCE_KEYWORDS.some(k => name.includes(k))) return true;
+    // Placeholder: extend with ML/API-based checks here
+    return false;
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -43,11 +52,12 @@ export function EvidenceUpload({ onFilesUploaded, maxFiles = 5 }: EvidenceUpload
         
         // Validate file type
         const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
         const isDocument = file.type === 'application/pdf' || 
                           file.type.includes('document') ||
                           file.type.includes('text');
 
-        if (!isImage && !isDocument) {
+        if (!isImage && !isDocument && !isVideo) {
           toast({
             title: "Invalid file type",
             description: `${file.name} is not a supported file type`,
@@ -56,11 +66,22 @@ export function EvidenceUpload({ onFilesUploaded, maxFiles = 5 }: EvidenceUpload
           continue;
         }
 
-        // Validate file size (10MB max)
-        if (file.size > 10 * 1024 * 1024) {
+        // Detect obvious violent media by filename heuristics
+        if (detectViolentMedia(file)) {
+          toast({
+            title: "Blocked media",
+            description: `${file.name} appears to contain violent or offensive content and has been blocked.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Validate file size
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB for videos
+        if (file.size > maxSize) {
           toast({
             title: "File too large",
-            description: `${file.name} exceeds 10MB limit`,
+            description: `${file.name} exceeds ${isVideo ? '50MB' : '10MB'} limit`,
             variant: "destructive",
           });
           continue;
@@ -74,7 +95,7 @@ export function EvidenceUpload({ onFilesUploaded, maxFiles = 5 }: EvidenceUpload
           id: Date.now().toString() + i,
           originalName: file.name,
           blurredUrl: fileUrl, // In real app, this would be the blurred/processed version
-          type: isImage ? 'image' : 'document',
+          type: isImage ? 'image' : isVideo ? 'video' : 'document',
           uploadedAt: new Date().toISOString(),
           metadata: {
             size: file.size,

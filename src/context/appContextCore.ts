@@ -13,9 +13,8 @@ export interface Message {
 }
 
 import { UserRewards } from '@/types/rewards';
-import { Database } from '@/types/supabase';
 
-type Notification = Database['public']['Tables']['notifications']['Row'];
+type Notification = any;
 
 export interface AppContextType {
   currentUser: User | null;

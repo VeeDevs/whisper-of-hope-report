@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/hooks/use-app';
@@ -35,6 +35,10 @@ export const ReportFeed: React.FC = () => {
   const { reports, createReport, addCommentToReport } = useApp();
   const [displayReports, setDisplayReports] = useState<ReportWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
+  const ITEMS_PER_PAGE = 10;
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement | null>(null);
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
   const [likedReports, setLikedReports] = useState<Set<string>>(new Set());
 
@@ -50,7 +54,36 @@ export const ReportFeed: React.FC = () => {
       .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setDisplayReports(sortedReports);
+    setVisibleCount(ITEMS_PER_PAGE);
+    setHasMore(sortedReports.length > ITEMS_PER_PAGE);
   }, [reports]);
+
+  const loadMore = useCallback(() => {
+    if (loading) return;
+    setLoading(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => {
+        const next = Math.min(prev + ITEMS_PER_PAGE, displayReports.length);
+        return next;
+      });
+      setLoading(false);
+    }, 200);
+  }, [displayReports.length, loading]);
+
+  useEffect(() => {
+    if (!observerTarget.current) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const el = observerTarget.current;
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   const handleLike = (reportId: string) => {
     if (likedReports.has(reportId)) {
@@ -128,7 +161,7 @@ export const ReportFeed: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        displayReports.map((report) => (
+        displayReports.slice(0, visibleCount).map((report) => (
           <Card key={report.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3">
               <div className="flex items-start justify-between">
@@ -256,6 +289,12 @@ export const ReportFeed: React.FC = () => {
             </CardFooter>
           </Card>
         ))
+      )}
+      {/* Infinite scroll trigger */}
+      {hasMore && (
+        <div ref={observerTarget} className="flex justify-center py-6">
+          {loading ? <Loader2 className="w-6 h-6 animate-spin text-whisper-600" /> : <div className="h-6 w-6" />}
+        </div>
       )}
     </div>
   );

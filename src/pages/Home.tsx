@@ -2,6 +2,7 @@
 import { motion, Variants } from 'framer-motion';
 import { ParticleNetworkBackground } from "@/components/ParticleNetworkBackground";
 import { MainNav } from "@/components/MainNav";
+import { HopeSlideshow } from "@/components/HopeSlideshow";
 import { Heart, FileText, User, Info, Shield, MessageCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -107,6 +108,27 @@ export default function Home() {
                 </Button>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Hope & Inspiration Slideshow Section */}
+        <section className="py-12 md:py-20 bg-gradient-to-b from-transparent via-whisper-50/50 to-transparent dark:via-whisper-950/30">
+          <div className="container px-4 md:px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">
+                Words of Hope & Healing
+              </h2>
+              <p className="text-center text-muted-foreground">
+                Take a moment to reflect on messages that support your recovery journey
+              </p>
+            </motion.div>
+            <HopeSlideshow />
           </div>
         </section>
 

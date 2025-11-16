@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { ACHIEVEMENTS, UserAchievement, UserLevel, USER_LEVELS } from '@/types/rewards';
-import type { Database, Json } from '@/types/supabase';
 
 export const rewardsService = {
   async getUserRewards(userId: string) {
@@ -100,7 +99,7 @@ export const rewardsService = {
       await client
         .from('user_rewards')
         .update({
-          achievements: [...currentAchievements, newAchievement] as unknown as Json
+          achievements: [...currentAchievements, newAchievement] as any
         })
         .eq('user_id', userId);
 

@@ -65,7 +65,7 @@ export interface EvidenceFile {
   id: string;
   originalName: string;
   blurredUrl: string;
-  type: 'image' | 'document';
+  type: 'image' | 'document' | 'video';
   uploadedAt: string;
   metadata: {
     size: number;
