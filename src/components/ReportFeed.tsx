@@ -11,6 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ interface ReportWithDetails {
   likes?: number;
   likes_count?: number;
   shares?: number;
+  shares_count?: number;
   userLiked?: boolean;
 }
 
@@ -42,6 +44,7 @@ export const ReportFeed: React.FC = () => {
   const observerTarget = useRef<HTMLDivElement | null>(null);
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
   const [likedReports, setLikedReports] = useState<Set<string>>(new Set());
+  const [heartBurst, setHeartBurst] = useState<string | null>(null);
 
   useEffect(() => {
     const sortedReports = (reports || [])
@@ -89,6 +92,8 @@ export const ReportFeed: React.FC = () => {
     } else {
       await likeReport(reportId);
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.8 } });
+      setHeartBurst(reportId);
+      setTimeout(() => setHeartBurst(null), 700);
     }
   };
 
@@ -107,8 +112,11 @@ export const ReportFeed: React.FC = () => {
     }
   };
 
+  const { shareReport } = useApp();
+
   const handleShare = async (report: ReportWithDetails) => {
-    const shareText = `${report.title}\n\n${report.content}\n\nShared from Whisper of Hope`;
+    const badge = "🔖 Whisper of Hope";
+    const shareText = `${report.title}\n\n${report.content}\n\n${badge}`;
     
     if (navigator.share) {
       try {
@@ -123,10 +131,12 @@ export const ReportFeed: React.FC = () => {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(shareText);
     }
+    await shareReport(report.id);
   };
 
   const shareToSocialMedia = (report: ReportWithDetails, platform: 'twitter' | 'facebook' | 'linkedin' | 'whatsapp') => {
-    const shareText = `${report.title}\n\n${report.content}`;
+    const badge = "🔖 Whisper of Hope";
+    const shareText = `${report.title}\n\n${report.content}\n\n${badge}`;
     const encodedText = encodeURIComponent(shareText);
     const currentUrl = window.location.href;
 
@@ -177,8 +187,21 @@ export const ReportFeed: React.FC = () => {
               </div>
             </CardHeader>
 
-            <CardContent className="pt-4 pb-4">
-              <p className="leading-relaxed">{report.content}</p>
+            <CardContent className="pt-4 pb-4 relative" onDoubleClick={() => handleLike(report.id)}>
+              <AnimatePresence>
+                {heartBurst === report.id && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <HeartBurst />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <p className="leading-relaxed text-base">{report.content}</p>
               
               {report.comments && report.comments.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
@@ -206,6 +229,9 @@ export const ReportFeed: React.FC = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" /> {report.comments?.length || 0} comments
+                </span>
+                <span className="flex items-center gap-1">
+                  <Share className="w-4 h-4" /> {report.shares_count || 0} shares
                 </span>
               </div>
 
@@ -291,3 +317,12 @@ export const ReportFeed: React.FC = () => {
 
 // Helper component import
 import { Send } from 'lucide-react';
+import { Heart } from 'lucide-react';
+
+function HeartBurst() {
+  return (
+    <div className="flex items-center justify-center">
+      <Heart className="w-16 h-16 text-pink-500" />
+    </div>
+  );
+}

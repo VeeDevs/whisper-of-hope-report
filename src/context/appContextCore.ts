@@ -44,6 +44,7 @@ export interface AppContextType {
   checkDailyStreak: () => Promise<void>;
   likeReport: (reportId: string) => Promise<void>;
   unlikeReport: (reportId: string) => Promise<void>;
+  shareReport: (reportId: string) => Promise<void>;
   userLikedReports: Set<string>;
 }
 
@@ -74,5 +75,6 @@ export const AppContext = createContext<AppContextType>({
   awardPoints: async () => {},
   likeReport: async () => {},
   unlikeReport: async () => {},
+  shareReport: async () => {},
   userLikedReports: new Set<string>()
 });

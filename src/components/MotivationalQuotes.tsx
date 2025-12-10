@@ -172,6 +172,18 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [quotes, setQuotes] = useState<MotivationalQuote[]>(localQuotes);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('wof_quotes_cache');
+      if (raw) {
+        const cached = JSON.parse(raw) as { quotes: MotivationalQuote[]; ts: number };
+        if (Array.isArray(cached.quotes) && cached.quotes.length > 0) {
+          setQuotes(cached.quotes);
+        }
+      }
+    } catch (_) { void 0 }
+  }, []);
+
   // Prefetch batches of quotes from public APIs to grow the pool beyond millions over time
   useEffect(() => {
     let cancelled = false;
@@ -199,13 +211,19 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
     const fetchBatch = async () => {
       try {
         const nextIdStart = quotes.length + 1;
-        // Try Quotable batch
-        const res1 = await fetch('https://api.quotable.io/quotes?limit=50');
+        // Try Quotable batch (larger page)
+        const res1 = await fetch('https://api.quotable.io/quotes?limit=100');
         if (res1.ok) {
           const data = await res1.json();
           const mapped = mapQuotable(data.results || [], nextIdStart);
           if (!cancelled && mapped.length) {
-            setQuotes(prev => [...prev, ...mapped]);
+            setQuotes(prev => {
+              const merged = [...prev, ...mapped];
+              try {
+                localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-5000), ts: Date.now() }));
+              } catch (_) { void 0 }
+              return merged;
+            });
           }
         }
         // Fill with ZenQuotes random
@@ -214,7 +232,13 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
           const data = await res2.json();
           const mapped = mapZen(Array.isArray(data) ? data : [data], quotes.length + 1);
           if (!cancelled && mapped.length) {
-            setQuotes(prev => [...prev, ...mapped]);
+            setQuotes(prev => {
+              const merged = [...prev, ...mapped];
+              try {
+                localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-10000), ts: Date.now() }));
+              } catch (_) { void 0 }
+              return merged;
+            });
           }
         }
       } catch (_err) {
@@ -224,7 +248,7 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
 
     // Initial fetch and periodic enrichment
     fetchBatch();
-    const timer = setInterval(fetchBatch, 30000);
+    const timer = setInterval(fetchBatch, 20000);
     return () => {
       cancelled = true;
       clearInterval(timer);

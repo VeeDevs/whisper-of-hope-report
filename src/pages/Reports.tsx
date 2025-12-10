@@ -30,7 +30,7 @@ export default function Reports() {
   }, [session, isLoading, navigate, refreshReports]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-purple-50 to-slate-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-rose-50 to-amber-50">
       <Navbar />
       <main className="flex-1 w-full px-3 sm:px-4 md:px-6 py-4 md:py-8">
         <div className="max-w-4xl mx-auto w-full">
@@ -41,14 +41,14 @@ export default function Reports() {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">
                   Community Stories
                 </h1>
-                <p className="text-slate-600 mt-2 text-sm md:text-base">
+                <p className="text-slate-700 mt-2 text-sm md:text-base">
                   Share your experiences and support others in our safe community
                 </p>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => setShowReportForm(true)}
-                  className="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
+                  className="flex-1 sm:flex-none bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Share Story</span>
@@ -109,10 +109,7 @@ export default function Reports() {
                 <Plus className="w-4 h-4 mr-2" />
                 Create Poll
               </Button>
-              <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
-                <p className="text-slate-600 font-medium">Polls feature coming soon</p>
-                <p className="text-slate-500 text-sm mt-2">Use stories to start discussions and gather community input</p>
-              </div>
+              
             </TabsContent>
           </Tabs>
         </div>

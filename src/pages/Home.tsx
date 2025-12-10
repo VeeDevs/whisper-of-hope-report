@@ -19,6 +19,17 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
+    try {
+      const raw = localStorage.getItem('wof_qod');
+      if (raw) {
+        const cached = JSON.parse(raw) as { text: string; author: string; date: string };
+        const today = new Date().toISOString().slice(0, 10);
+        if (cached.date === today) {
+          setQod({ text: cached.text, author: cached.author });
+          cancelled = true;
+        }
+      }
+    } catch (_) { void 0 }
     const fetchQOD = async () => {
       try {
         // Try ZenQuotes Quote of the Day
@@ -26,7 +37,13 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           const item = Array.isArray(data) ? data[0] : data;
-          if (!cancelled && item?.q) setQod({ text: item.q, author: item.a || 'Unknown' });
+          if (!cancelled && item?.q) {
+            setQod({ text: item.q, author: item.a || 'Unknown' });
+            try {
+              const today = new Date().toISOString().slice(0, 10);
+              localStorage.setItem('wof_qod', JSON.stringify({ text: item.q, author: item.a || 'Unknown', date: today }));
+            } catch (_) { void 0 }
+          }
           return;
         }
       } catch (_err) { void 0 }
@@ -35,7 +52,13 @@ export default function Home() {
         const res2 = await fetch('https://api.quotable.io/random?tags=inspirational');
         if (res2.ok) {
           const data2 = await res2.json();
-          if (!cancelled && data2?.content) setQod({ text: data2.content, author: data2.author || 'Unknown' });
+          if (!cancelled && data2?.content) {
+            setQod({ text: data2.content, author: data2.author || 'Unknown' });
+            try {
+              const today = new Date().toISOString().slice(0, 10);
+              localStorage.setItem('wof_qod', JSON.stringify({ text: data2.content, author: data2.author || 'Unknown', date: today }));
+            } catch (_) { void 0 }
+          }
         }
       } catch (_err) { void 0 }
     };

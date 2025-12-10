@@ -35,10 +35,10 @@ export function PollForm({ onSuccess }: PollFormProps) {
     setOptions(newOptions);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (question.trim() && options.every(opt => opt.trim())) {
-      createPoll(question, options.filter(opt => opt.trim()), parseInt(duration));
+      await createPoll(question, options.filter(opt => opt.trim()), parseInt(duration));
       setQuestion("");
       setOptions(["", ""]);
       setDuration("7");

@@ -24,6 +24,7 @@ export interface Report {
   evidence_files: EvidenceFile[];
   comments: Comment[];
   likes_count?: number;
+  shares_count?: number;
 }
 
 export interface Comment {

@@ -23,6 +23,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userLikedReports, setUserLikedReports] = useState<Set<string>>(new Set());
+  const [sharesCountMap, setSharesCountMap] = useState<Map<string, number>>(new Map());
   const [likesCountMap, setLikesCountMap] = useState<Map<string, number>>(new Map());
   const { toast } = useToast();
 
@@ -111,6 +112,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentUser]);
 
+  const loadShares = useCallback(async () => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await (supabase as any)
+        .from('shares')
+        .select('id, report_id');
+      if (error) throw error;
+      const counts = new Map<string, number>();
+      (data || []).forEach((row: { id: string; report_id: string }) => {
+        counts.set(row.report_id, (counts.get(row.report_id) || 0) + 1);
+      });
+      setSharesCountMap(counts);
+    } catch (err) {
+      console.error('Error loading shares:', err);
+    }
+  }, []);
+
+  
+
   const loadReports = useCallback(async () => {
     if (!supabase) {
       console.warn('⚠️ Supabase not available - skipping reports fetch');
@@ -124,16 +144,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
       if (data) {
         const baseReports = data as unknown as Report[];
-        const withLikes = baseReports.map((r: Report) => ({
+        const withCounts = baseReports.map((r: Report) => ({
           ...r,
           likes_count: likesCountMap.get(r.id) || 0,
+          shares_count: sharesCountMap.get(r.id) || 0,
         }));
-        setReports(withLikes);
+        setReports(withCounts);
       }
     } catch (error) {
       console.error('Error loading reports:', error);
     }
-  }, [likesCountMap]);
+  }, [likesCountMap, sharesCountMap]);
 
   const refreshReports = useCallback(async () => {
     await loadReports();
@@ -157,6 +178,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const sendQuoteOfDayNotification = async (userId: string) => {
+    if (!supabase) return;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `qod_sent_${userId}`;
+      const last = localStorage.getItem(key);
+      if (last === today) return;
+      const res = await fetch('https://zenquotes.io/api/today');
+      if (res.ok) {
+        const data = await res.json();
+        const item = Array.isArray(data) ? data[0] : data;
+        const content = item?.q ? `${item.q} — ${item.a || 'Unknown'}` : '';
+        if (content) {
+          const client = supabase as any;
+          await client.from('notifications').insert({ user_id: userId, content, type: 'qod', read: false });
+          localStorage.setItem(key, today);
+        }
+      }
+    } catch (_) { void 0 }
+  };
+
   useEffect(() => {
     if (!supabase) {
       console.warn('⚠️ Supabase client not available - skipping auth initialization');
@@ -171,6 +213,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           fetchUserProfile(session.user.id);
           loadUserRewards(session.user.id);
           loadNotifications(session.user.id);
+          await sendQuoteOfDayNotification(session.user.id);
         } else {
           setCurrentUser(null);
           setUserRewards(null);
@@ -187,12 +230,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         fetchUserProfile(session.user.id);
         loadUserRewards(session.user.id);
         loadNotifications(session.user.id);
+        sendQuoteOfDayNotification(session.user.id);
       }
       setIsLoading(false);
     });
 
 
-    // Realtime subscriptions for comments and likes
+    // Realtime subscriptions for comments, likes, and shares
     if (supabase) {
       const channel = (supabase as any).channel('realtime-reports');
 
@@ -212,6 +256,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             refreshReports();
           }
         )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'shares' },
+          async (_payload: any) => {
+            await loadShares();
+            refreshReports();
+          }
+        )
         .subscribe();
 
       return () => {
@@ -223,7 +275,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, loadUserRewards, loadNotifications, refreshReports, loadLikes]);
+  }, [fetchUserProfile, loadUserRewards, loadNotifications, refreshReports, loadLikes, loadShares]);
 
   useEffect(() => {
     if (session) {
@@ -455,7 +507,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     loadLikes();
-  }, [loadLikes]);
+    loadShares();
+  }, [loadLikes, loadShares]);
 
   const likeReport = async (reportId: string): Promise<void> => {
     if (!currentUser || !supabase) return;
@@ -486,6 +539,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error('Error unliking report:', err);
       toast({ title: 'Error', description: 'Could not unlike the report', variant: 'destructive' });
+    }
+  };
+
+  
+
+  const shareReport = async (reportId: string): Promise<void> => {
+    if (!currentUser || !supabase) return;
+    try {
+      const client = supabase as any;
+      const { error } = await client
+        .from('shares')
+        .insert({ report_id: reportId, user_id: currentUser.user_id });
+      if (error) throw error;
+      await loadShares();
+    } catch (err) {
+      console.error('Error sharing report:', err);
     }
   };
 
@@ -600,6 +669,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     checkDailyStreak,
     likeReport,
     unlikeReport,
+    shareReport,
     userLikedReports,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
