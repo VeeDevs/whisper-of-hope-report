@@ -185,16 +185,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const key = `qod_sent_${userId}`;
       const last = localStorage.getItem(key);
       if (last === today) return;
-      const res = await fetch('https://zenquotes.io/api/today');
-      if (res.ok) {
-        const data = await res.json();
-        const item = Array.isArray(data) ? data[0] : data;
-        const content = item?.q ? `${item.q} — ${item.a || 'Unknown'}` : '';
-        if (content) {
-          const client = supabase as any;
-          await client.from('notifications').insert({ user_id: userId, content, type: 'qod', read: false });
-          localStorage.setItem(key, today);
-        }
+      const seeds = [
+        "If you haven't the strength to impose your own terms upon life, then you must accept the terms it offers you. — T.S. Eliot",
+        "Hope is the quiet courage to begin again. — Anonymous",
+        "You survived your toughest days; you can trust your strength. — Anonymous",
+        "Boundaries protect your peace and invite healthy love. — Anonymous",
+        "Healing is not linear; choosing yourself is victory. — Anonymous"
+      ];
+      const idx = Math.floor(Math.random() * seeds.length);
+      const content = seeds[idx];
+      if (content) {
+        const client = supabase as any;
+        await client.from('notifications').insert({ user_id: userId, content, type: 'qod', read: false });
+        localStorage.setItem(key, today);
       }
     } catch (_) { void 0 }
   };
@@ -516,7 +519,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const client = supabase as any;
       const { error } = await client
         .from('likes')
-        .insert({ report_id: reportId, user_id: currentUser.user_id });
+        .upsert({ report_id: reportId, user_id: currentUser.user_id }, { onConflict: 'report_id,user_id' });
       if (error) throw error;
       await loadLikes();
     } catch (err) {

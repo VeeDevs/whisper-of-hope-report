@@ -7,12 +7,13 @@ import { MotivationalQuotes } from "@/components/MotivationalQuotes";
 import { useApp } from "@/hooks/use-app";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Plus, Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 export default function Reports() {
-  const { currentUser, session, refreshReports, isLoading } = useApp();
+  const { currentUser, session, refreshReports, isLoading, reports } = useApp();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [showReportForm, setShowReportForm] = useState(false);
@@ -65,6 +66,30 @@ export default function Reports() {
                 </Button>
               </div>
             </div>
+          </div>
+          
+          <div className="mb-6">
+            <Carousel className="w-full">
+              <CarouselContent>
+                <CarouselItem className="basis-auto pr-3">
+                  <Button onClick={() => setShowReportForm(true)} variant="outline" className="h-20 w-20 rounded-full">
+                    <Plus className="w-6 h-6" />
+                  </Button>
+                </CarouselItem>
+                {(reports || []).slice(0, 15).map((r) => (
+                  <CarouselItem key={r.id} className="basis-auto pr-3">
+                    <Link to={`/report/${r.id}`} className="flex flex-col items-center gap-2">
+                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white text-lg font-bold">
+                        {r.anonymous_id?.slice(0, 2) || 'WH'}
+                      </div>
+                      <div className="text-xs w-20 text-center truncate">
+                        {r.title}
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           </div>
 
           <Tabs defaultValue="reports" className="w-full">

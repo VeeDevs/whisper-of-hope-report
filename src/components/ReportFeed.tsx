@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/hooks/use-app';
@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 interface ReportWithDetails {
   id: string;
@@ -38,10 +39,7 @@ export const ReportFeed: React.FC = () => {
   const { reports, addCommentToReport, likeReport, unlikeReport, userLikedReports } = useApp();
   const [displayReports, setDisplayReports] = useState<ReportWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
-  const ITEMS_PER_PAGE = 10;
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [hasMore, setHasMore] = useState(true);
-  const observerTarget = useRef<HTMLDivElement | null>(null);
+  
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
   const [likedReports, setLikedReports] = useState<Set<string>>(new Set());
   const [heartBurst, setHeartBurst] = useState<string | null>(null);
@@ -55,36 +53,7 @@ export const ReportFeed: React.FC = () => {
       .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setDisplayReports(sortedReports);
-    setVisibleCount(ITEMS_PER_PAGE);
-    setHasMore(sortedReports.length > ITEMS_PER_PAGE);
   }, [reports, userLikedReports]);
-
-  const loadMore = useCallback(() => {
-    if (loading) return;
-    setLoading(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => {
-        const next = Math.min(prev + ITEMS_PER_PAGE, displayReports.length);
-        return next;
-      });
-      setLoading(false);
-    }, 200);
-  }, [displayReports.length, loading]);
-
-  useEffect(() => {
-    if (!observerTarget.current) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    const el = observerTarget.current;
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [hasMore, loading, loadMore]);
 
   const handleLike = async (reportId: string) => {
     if (userLikedReports.has(reportId)) {
@@ -151,7 +120,7 @@ export const ReportFeed: React.FC = () => {
   };
 
   return (
-    <div className="w-full space-y-6 pb-20 overflow-hidden">
+    <div className="w-full pb-4">
       {displayReports && displayReports.length === 0 ? (
         <Card className="bg-gradient-to-br from-slate-50 to-slate-100">
           <CardContent className="pt-12 text-center">
@@ -163,153 +132,184 @@ export const ReportFeed: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        displayReports.slice(0, visibleCount).map((report) => (
-          <Card key={report.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-card text-foreground">
-            <CardHeader className="pb-3 border-b">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold">{report.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {report.anonymous_id} • {new Date(report.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="w-4 h-4" />
+        <Carousel orientation="vertical" className="h-[75vh]">
+          <CarouselContent>
+            {displayReports.map((report) => (
+              <CarouselItem key={report.id}>
+                <div className="relative h-[75vh]">
+                  <Card className="h-full overflow-hidden bg-card text-foreground">
+                    <CardHeader className="pb-3 border-b">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold">{report.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {report.anonymous_id} • {new Date(report.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>Report</DropdownMenuItem>
+                            <DropdownMenuItem>Mute</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4 pb-4 relative" onDoubleClick={() => handleLike(report.id)}>
+                      <AnimatePresence>
+                        {heartBurst === report.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                          >
+                            <HeartBurst />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <p className="leading-relaxed text-base">{report.content}</p>
+                      {report.comments && report.comments.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase">{report.comments.length} comments</p>
+                          {report.comments.slice(0, 2).map((comment: any) => (
+                            <div key={comment.id} className="bg-secondary p-2 rounded text-sm">
+                              <p className="font-medium">{comment.anonymous_id}</p>
+                              <p className="text-foreground">{comment.content}</p>
+                            </div>
+                          ))}
+                          {report.comments.length > 2 && (
+                            <button className="text-sm text-primary font-medium hover:underline">
+                              View all {report.comments.length} comments
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="border-t py-2 flex flex-col gap-3">
+                      <div className="w-full flex gap-4 text-xs text-muted-foreground px-2">
+                        <span className="flex items-center gap-1">
+                          <ThumbsUp className="w-4 h-4" /> {report.likes_count || 0} likes
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="w-4 h-4" /> {report.comments?.length || 0} comments
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Share className="w-4 h-4" /> {report.shares_count || 0} shares
+                        </span>
+                      </div>
+                      <div className="w-full flex gap-2">
+                        <Button
+                          variant={userLikedReports.has(report.id) ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleLike(report.id)}
+                        >
+                          <ThumbsUp className="w-4 h-4 mr-1" />
+                          {userLikedReports.has(report.id) ? 'Liked' : 'Like'}
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          Comment
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              <Share2 className="w-4 h-4 mr-1" />
+                              Share
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleShare(report)}>
+                              <Share className="w-4 h-4 mr-2" />
+                              Share Story
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'twitter')}>
+                              Twitter
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'facebook')}>
+                              Facebook
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'linkedin')}>
+                              LinkedIn
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'whatsapp')}>
+                              WhatsApp
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      <div className="w-full flex gap-2 pt-2 border-t border-slate-200">
+                        <input
+                          type="text"
+                          placeholder="Write a supportive comment..."
+                          value={commentText[report.id] || ''}
+                          onChange={(e) =>
+                            setCommentText({ ...commentText, [report.id]: e.target.value })
+                          }
+                          className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleComment(report.id)}
+                          disabled={loading || !commentText[report.id]?.trim()}
+                        >
+                          {loading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                  <div className="absolute right-3 top-1/3 flex flex-col gap-2">
+                    <Button
+                      variant={userLikedReports.has(report.id) ? 'default' : 'outline'}
+                      size="icon"
+                      onClick={() => handleLike(report.id)}
+                      className="rounded-full"
+                    >
+                      <ThumbsUp className="w-5 h-5" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Report</DropdownMenuItem>
-                    <DropdownMenuItem>Mute</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pt-4 pb-4 relative" onDoubleClick={() => handleLike(report.id)}>
-              <AnimatePresence>
-                {heartBurst === report.id && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  >
-                    <HeartBurst />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <p className="leading-relaxed text-base">{report.content}</p>
-              
-              {report.comments && report.comments.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">{report.comments.length} comments</p>
-                  {report.comments.slice(0, 2).map((comment: any) => (
-                    <div key={comment.id} className="bg-secondary p-2 rounded text-sm">
-                      <p className="font-medium">{comment.anonymous_id}</p>
-                      <p className="text-foreground">{comment.content}</p>
-                    </div>
-                  ))}
-                  {report.comments.length > 2 && (
-                    <button className="text-sm text-primary font-medium hover:underline">
-                      View all {report.comments.length} comments
-                    </button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-
-            <CardFooter className="border-t py-2 flex flex-col gap-3">
-              {/* Engagement Stats */}
-              <div className="w-full flex gap-4 text-xs text-muted-foreground px-2">
-                <span className="flex items-center gap-1">
-                  <ThumbsUp className="w-4 h-4" /> {report.likes_count || 0} likes
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageCircle className="w-4 h-4" /> {report.comments?.length || 0} comments
-                </span>
-                <span className="flex items-center gap-1">
-                  <Share className="w-4 h-4" /> {report.shares_count || 0} shares
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="w-full flex gap-2">
-                <Button
-                  variant={userLikedReports.has(report.id) ? 'default' : 'outline'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleLike(report.id)}
-                >
-                  <ThumbsUp className="w-4 h-4 mr-1" />
-                  {userLikedReports.has(report.id) ? 'Liked' : 'Like'}
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  Comment
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Share2 className="w-4 h-4 mr-1" />
-                      Share
+                    <Button variant="outline" size="icon" className="rounded-full">
+                      <MessageCircle className="w-5 h-5" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleShare(report)}>
-                      <Share className="w-4 h-4 mr-2" />
-                      Share Story
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'twitter')}>
-                      Twitter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'facebook')}>
-                      Facebook
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'linkedin')}>
-                      LinkedIn
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'whatsapp')}>
-                      WhatsApp
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Comment Input */}
-              <div className="w-full flex gap-2 pt-2 border-t border-slate-200">
-                <input
-                  type="text"
-                  placeholder="Write a supportive comment..."
-                  value={commentText[report.id] || ''}
-                  onChange={(e) =>
-                    setCommentText({ ...commentText, [report.id]: e.target.value })
-                  }
-                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => handleComment(report.id)}
-                  disabled={loading || !commentText[report.id]?.trim()}
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))
-      )}
-      {/* Infinite scroll trigger */}
-      {hasMore && (
-        <div ref={observerTarget} className="flex justify-center py-6">
-          {loading ? <Loader2 className="w-6 h-6 animate-spin text-whisper-600" /> : <div className="h-6 w-6" />}
-        </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="rounded-full">
+                          <Share2 className="w-5 h-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleShare(report)}>
+                          Share Story
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'twitter')}>
+                          Twitter
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'facebook')}>
+                          Facebook
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'linkedin')}>
+                          LinkedIn
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => shareToSocialMedia(report, 'whatsapp')}>
+                          WhatsApp
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       )}
     </div>
   );

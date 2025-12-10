@@ -153,6 +153,13 @@ const localQuotes: MotivationalQuote[] = [
     category: 'hope',
     emoji: '⚓',
   },
+  {
+    id: 21,
+    text: "If you haven't the strength to impose your own terms upon life, then you must accept the terms it offers you.",
+    author: "T.S. Eliot",
+    category: 'hope',
+    emoji: '📜',
+  },
 ];
 
 interface MotivationalQuotesProps {
@@ -171,6 +178,7 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [quotes, setQuotes] = useState<MotivationalQuote[]>(localQuotes);
+  const [seen, setSeen] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     try {
@@ -184,75 +192,66 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
     } catch (_) { void 0 }
   }, []);
 
-  // Prefetch batches of quotes from public APIs to grow the pool beyond millions over time
   useEffect(() => {
-    let cancelled = false;
-
-    const mapQuotable = (items: any[], nextIdStart: number): MotivationalQuote[] => {
-      return items.map((q, idx) => ({
-        id: nextIdStart + idx,
-        text: q.content,
-        author: q.author || 'Unknown',
-        category: 'hope',
-        emoji: '✨',
-      }));
+    const adjectives = [
+      'quiet', 'gentle', 'brave', 'kind', 'resilient', 'calm', 'hopeful', 'steadfast', 'warm', 'patient',
+      'strong', 'tender', 'courageous', 'vibrant', 'grounded', 'mindful', 'grateful', 'compassionate', 'curious', 'wise',
+      'faithful', 'creative', 'bold', 'balanced', 'rested', 'focused', 'confident', 'open', 'centered', 'peaceful',
+      'loving', 'healing', 'present', 'capable', 'growing', 'rising', 'renewed', 'steady', 'bright', 'true'
+    ];
+    const verbs = [
+      'choose', 'create', 'protect', 'heal', 'embrace', 'nurture', 'learn', 'rise', 'breathe', 'honor',
+      'accept', 'grow', 'rest', 'listen', 'give', 'receive', 'reflect', 'trust', 'stand', 'recover'
+    ];
+    const nouns = [
+      'boundaries', 'peace', 'strength', 'voice', 'story', 'truth', 'energy', 'future', 'hope', 'courage',
+      'balance', 'compassion', 'light', 'rest', 'clarity', 'focus', 'faith', 'kindness', 'joy', 'grace'
+    ];
+    const authors = ['Anonymous', 'Community Mentor', 'Wellness Guide', 'Mindfulness Teacher', 'Therapist'];
+    const emojis = ['🌟', '✨', '💫', '🌿', '💜', '🔥', '⚖️', '❤️', '🧠', '🌈'];
+    const categories: MotivationalQuote['category'][] = ['mental-health', 'gbv', 'stress', 'emotional-balance', 'hope'];
+    const makeText = () => {
+      const a = adjectives[Math.floor(Math.random() * adjectives.length)];
+      const v = verbs[Math.floor(Math.random() * verbs.length)];
+      const n = nouns[Math.floor(Math.random() * nouns.length)];
+      return `${a[0].toUpperCase()}${a.slice(1)} people ${v} their ${n}.`;
     };
-
-    const mapZen = (items: any[], nextIdStart: number): MotivationalQuote[] => {
-      return items.map((q: any, idx: number) => ({
-        id: nextIdStart + idx,
-        text: q.q,
-        author: q.a || 'Unknown',
-        category: 'hope',
-        emoji: '🌟',
-      }));
-    };
-
-    const fetchBatch = async () => {
-      try {
-        const nextIdStart = quotes.length + 1;
-        // Try Quotable batch (larger page)
-        const res1 = await fetch('https://api.quotable.io/quotes?limit=100');
-        if (res1.ok) {
-          const data = await res1.json();
-          const mapped = mapQuotable(data.results || [], nextIdStart);
-          if (!cancelled && mapped.length) {
-            setQuotes(prev => {
-              const merged = [...prev, ...mapped];
-              try {
-                localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-5000), ts: Date.now() }));
-              } catch (_) { void 0 }
-              return merged;
-            });
-          }
-        }
-        // Fill with ZenQuotes random
-        const res2 = await fetch('https://zenquotes.io/api/random');
-        if (res2.ok) {
-          const data = await res2.json();
-          const mapped = mapZen(Array.isArray(data) ? data : [data], quotes.length + 1);
-          if (!cancelled && mapped.length) {
-            setQuotes(prev => {
-              const merged = [...prev, ...mapped];
-              try {
-                localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-10000), ts: Date.now() }));
-              } catch (_) { void 0 }
-              return merged;
-            });
-          }
-        }
-      } catch (_err) {
-        // Keep silent; local quotes remain
+    const uniqueBatch = (count: number, startId: number): MotivationalQuote[] => {
+      const localSeen = new Set<string>();
+      const out: MotivationalQuote[] = [];
+      while (out.length < count) {
+        const t = makeText();
+        if (localSeen.has(t)) continue;
+        localSeen.add(t);
+        out.push({
+          id: startId + out.length,
+          text: t,
+          author: authors[Math.floor(Math.random() * authors.length)],
+          category: categories[Math.floor(Math.random() * categories.length)],
+          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        });
       }
+      return out;
     };
-
-    // Initial fetch and periodic enrichment
-    fetchBatch();
-    const timer = setInterval(fetchBatch, 20000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
+    const seed = uniqueBatch(200, quotes.length + 1);
+    setQuotes(prev => {
+      const merged = [...prev, ...seed];
+      try {
+        localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-20000), ts: Date.now() }));
+      } catch (_) { void 0 }
+      return merged;
+    });
+    const timer = setInterval(() => {
+      const more = uniqueBatch(100, quotes.length + 1);
+      setQuotes(prev => {
+        const merged = [...prev, ...more];
+        try {
+          localStorage.setItem('wof_quotes_cache', JSON.stringify({ quotes: merged.slice(-20000), ts: Date.now() }));
+        } catch (_) { void 0 }
+        return merged;
+      });
+    }, 10000);
+    return () => clearInterval(timer);
   }, [quotes.length]);
 
   useEffect(() => {
@@ -308,15 +307,18 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
           </Button>
 
           <div className="flex gap-1">
-                {quotes.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentIndex ? 'bg-white w-8' : 'bg-white/50'
-                }`}
-              />
-            ))}
+            {Array.from({ length: Math.min(quotes.length, 20) }, (_, i) => {
+              const start = Math.max(0, currentIndex - 10);
+              const idx = Math.min(quotes.length - 1, start + i);
+              const active = idx === currentIndex;
+              return (
+                <button
+                  key={`dot-${idx}`}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`${active ? 'bg-white w-8' : 'bg-white/50'} w-2 h-2 rounded-full transition-all`}
+                />
+              );
+            })}
           </div>
 
           <Button
@@ -386,15 +388,18 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
                 </Button>
 
                 <div className="flex gap-1">
-                  {quotes.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentIndex(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        idx === currentIndex ? 'bg-white w-6' : 'bg-white/50'
-                      }`}
-                    />
-                  ))}
+                  {Array.from({ length: Math.min(quotes.length, 16) }, (_, i) => {
+                    const start = Math.max(0, currentIndex - 8);
+                    const idx = Math.min(quotes.length - 1, start + i);
+                    const active = idx === currentIndex;
+                    return (
+                      <button
+                        key={`dotp-${idx}`}
+                        onClick={() => setCurrentIndex(idx)}
+                        className={`${active ? 'bg-white w-6' : 'bg-white/50'} w-2 h-2 rounded-full transition-all`}
+                      />
+                    );
+                  })}
                 </div>
 
                 <Button
