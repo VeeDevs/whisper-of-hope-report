@@ -9,12 +9,39 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useApp } from "@/hooks/use-app";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const { currentUser } = useApp();
   const { t } = useLanguage();
   const [showQuotes, setShowQuotes] = useState(false);
+  const [qod, setQod] = useState<{ text: string; author: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchQOD = async () => {
+      try {
+        // Try ZenQuotes Quote of the Day
+        const res = await fetch('https://zenquotes.io/api/today');
+        if (res.ok) {
+          const data = await res.json();
+          const item = Array.isArray(data) ? data[0] : data;
+          if (!cancelled && item?.q) setQod({ text: item.q, author: item.a || 'Unknown' });
+          return;
+        }
+      } catch (_err) { void 0 }
+      try {
+        // Fallback: Quotable inspirational random
+        const res2 = await fetch('https://api.quotable.io/random?tags=inspirational');
+        if (res2.ok) {
+          const data2 = await res2.json();
+          if (!cancelled && data2?.content) setQod({ text: data2.content, author: data2.author || 'Unknown' });
+        }
+      } catch (_err) { void 0 }
+    };
+    fetchQOD();
+    return () => { cancelled = true; };
+  }, []);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -137,6 +164,21 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+
+        {/* Quote of the Day */}
+        {qod && (
+          <section className="py-6">
+            <div className="container px-3 sm:px-4 md:px-6">
+              <div className="rounded-xl bg-gradient-to-r from-amber-50 via-yellow-50 to-rose-50 border border-amber-200 p-4 md:p-6 shadow-sm">
+                <div className="text-center">
+                  <h2 className="text-xl md:text-2xl font-bold mb-2">Quote of the Day</h2>
+                  <p className="text-base md:text-lg text-slate-700 italic">“{qod.text}”</p>
+                  <p className="text-sm text-slate-600 mt-2">— {qod.author}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Hope & Inspiration Slideshow Section */}
         <section className="py-8 md:py-16 bg-gradient-to-b from-transparent via-purple-50/50 to-transparent">

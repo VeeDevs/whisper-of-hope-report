@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { EyeOff, Eye } from "lucide-react";
 
@@ -7,18 +7,7 @@ export function StealthMode() {
   const [isStealthActive, setIsStealthActive] = useState(false);
   const [originalTitle, setOriginalTitle] = useState(document.title);
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        toggleStealth();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
-
-  const toggleStealth = () => {
+  const toggleStealth = useCallback(() => {
     if (!isStealthActive) {
       // Activate stealth mode
       setOriginalTitle(document.title);
@@ -72,7 +61,18 @@ export function StealthMode() {
       }
       setIsStealthActive(false);
     }
-  };
+  }, [isStealthActive, originalTitle]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        toggleStealth();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [toggleStealth]);
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

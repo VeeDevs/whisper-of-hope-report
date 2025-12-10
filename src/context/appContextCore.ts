@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { User, Report, Poll, EvidenceFile } from '../types';
 import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
@@ -26,7 +27,7 @@ export interface AppContextType {
   notifications: Notification[];
   unreadNotifications: number;
   supabase: typeof supabase;
-  setCurrentUser: (user: User) => void;
+  setCurrentUser: Dispatch<SetStateAction<User | null>>;
   logout: () => void;
   createReport: (title: string, content: string, evidenceFiles?: EvidenceFile[]) => Promise<boolean>;
   addCommentToReport: (reportId: string, content: string) => Promise<boolean>;
@@ -41,6 +42,9 @@ export interface AppContextType {
   awardPoints: (points: number, reason: string) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
   checkDailyStreak: () => Promise<void>;
+  likeReport: (reportId: string) => Promise<void>;
+  unlikeReport: (reportId: string) => Promise<void>;
+  userLikedReports: Set<string>;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -67,5 +71,8 @@ export const AppContext = createContext<AppContextType>({
   refreshPolls: async () => {},
   markNotificationRead: async () => {},
   checkDailyStreak: async () => {},
-  awardPoints: async () => {}
+  awardPoints: async () => {},
+  likeReport: async () => {},
+  unlikeReport: async () => {},
+  userLikedReports: new Set<string>()
 });

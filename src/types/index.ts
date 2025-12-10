@@ -23,6 +23,7 @@ export interface Report {
   is_crisis_detected: boolean;
   evidence_files: EvidenceFile[];
   comments: Comment[];
+  likes_count?: number;
 }
 
 export interface Comment {

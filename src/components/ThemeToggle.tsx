@@ -1,17 +1,15 @@
 import React from "react";
-import { useTheme } from "@/hooks/use-theme";
-import { Sun, Moon } from "lucide-react";
+import { Sun } from "lucide-react";
 
 export const ThemeToggle: React.FC = () => {
-  const { darkMode, toggleTheme } = useTheme();
+  // Dark mode disabled: render a non-interactive light indicator
   return (
-    <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-      aria-label="Toggle light/dark mode"
-      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+    <span
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-300"
+      title="Light mode"
     >
-      {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-    </button>
+      <Sun className="h-4 w-4" />
+      <span className="text-xs">Light</span>
+    </span>
   );
 };

@@ -226,7 +226,10 @@ You deserve immediate professional support. Will you reach out to one of these r
   }
 
   // Reflective questions for deeper understanding
-  guidance += ` ${getReflectiveQuestion(emotions[0] || '', painPoints[0] || '')}`;
+  guidance += `\n\n${getReflectiveQuestion(emotions[0] || '', painPoints[0] || '')}`;
+
+  // Gentle closing
+  guidance += `\n\nIf it helps, we can take this one small step at a time.`;
 
   return guidance;
 }

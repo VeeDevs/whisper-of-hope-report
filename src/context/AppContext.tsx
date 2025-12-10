@@ -22,6 +22,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [userRewards, setUserRewards] = useState<UserRewards | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userLikedReports, setUserLikedReports] = useState<Set<string>>(new Set());
+  const [likesCountMap, setLikesCountMap] = useState<Map<string, number>>(new Map());
   const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async (userId: string) => {
@@ -86,6 +88,75 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const loadLikes = useCallback(async () => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await (supabase as any)
+        .from('likes')
+        .select('id, report_id, user_id');
+      if (error) throw error;
+      const counts = new Map<string, number>();
+      const userLiked = new Set<string>();
+      (data || []).forEach((row: { id: string; report_id: string; user_id: string }) => {
+        counts.set(row.report_id, (counts.get(row.report_id) || 0) + 1);
+        if (currentUser && row.user_id === currentUser.user_id) {
+          userLiked.add(row.report_id);
+        }
+      });
+      setLikesCountMap(counts);
+      setUserLikedReports(userLiked);
+      setReports(prev => prev.map(r => ({ ...r, likes_count: counts.get(r.id) || 0 })));
+    } catch (err) {
+      console.error('Error loading likes:', err);
+    }
+  }, [currentUser]);
+
+  const loadReports = useCallback(async () => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping reports fetch');
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*, comments(*), evidence_files(*)');
+
+      if (error) throw error;
+      if (data) {
+        const baseReports = data as unknown as Report[];
+        const withLikes = baseReports.map((r: Report) => ({
+          ...r,
+          likes_count: likesCountMap.get(r.id) || 0,
+        }));
+        setReports(withLikes);
+      }
+    } catch (error) {
+      console.error('Error loading reports:', error);
+    }
+  }, [likesCountMap]);
+
+  const refreshReports = useCallback(async () => {
+    await loadReports();
+  }, [loadReports]);
+
+  const loadPolls = useCallback(async () => {
+    if (!supabase) {
+      console.warn('⚠️ Supabase not available - skipping polls fetch');
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('polls')
+        .select('*, poll_options(*)');
+      if (error) throw error;
+      if (data) {
+        setPolls(data as unknown as Poll[]);
+      }
+    } catch (error) {
+      console.error('Error loading polls:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (!supabase) {
       console.warn('⚠️ Supabase client not available - skipping auth initialization');
@@ -120,13 +191,46 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
-    loadReports();
-    loadPolls();
+
+    // Realtime subscriptions for comments and likes
+    if (supabase) {
+      const channel = (supabase as any).channel('realtime-reports');
+
+      channel
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'comments' },
+          (_payload: any) => {
+            refreshReports();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'likes' },
+          async (_payload: any) => {
+            await loadLikes();
+            refreshReports();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+        channel.unsubscribe();
+      };
+    }
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, loadUserRewards, loadNotifications]);
+  }, [fetchUserProfile, loadUserRewards, loadNotifications, refreshReports, loadLikes]);
+
+  useEffect(() => {
+    if (session) {
+      loadReports();
+      loadPolls();
+    }
+  }, [session, loadReports, loadPolls]);
 
   const awardPoints = async (points: number, reason: string): Promise<void> => {
     if (!currentUser) return;
@@ -138,9 +242,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const refreshReports = async () => {
-    await loadReports();
-  };
+  
 
   const createReport = async (
     title: string,
@@ -329,43 +431,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loadReports = async () => {
-    if (!supabase) {
-      console.warn('⚠️ Supabase not available - skipping reports fetch');
-      return;
-    }
-    try {
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*, comments(*), evidence_files(*)');
+  
 
-      if (error) throw error;
-      if (data) {
-        setReports(data as unknown as Report[]);
-      }
-    } catch (error) {
-      console.error('Error loading reports:', error);
-    }
-  };
-
-  const loadPolls = async () => {
-    if (!supabase) {
-      console.warn('⚠️ Supabase not available - skipping polls fetch');
-      return;
-    }
-    try {
-      const { data, error } = await supabase
-        .from('polls')
-        .select('*, poll_options(*)');
-      
-      if (error) throw error;
-      if (data) {
-        setPolls(data as unknown as Poll[]);
-      }
-    } catch (error) {
-      console.error('Error loading polls:', error);
-    }
-  };
+  
 
   const logout = async () => {
     try {
@@ -380,6 +448,44 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       });
     } catch (error) {
       console.error('Error logging out:', error);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    loadLikes();
+  }, [loadLikes]);
+
+  const likeReport = async (reportId: string): Promise<void> => {
+    if (!currentUser || !supabase) return;
+    try {
+      const client = supabase as any;
+      const { error } = await client
+        .from('likes')
+        .insert({ report_id: reportId, user_id: currentUser.user_id });
+      if (error) throw error;
+      await loadLikes();
+    } catch (err) {
+      console.error('Error liking report:', err);
+      toast({ title: 'Error', description: 'Could not like the report', variant: 'destructive' });
+    }
+  };
+
+  const unlikeReport = async (reportId: string): Promise<void> => {
+    if (!currentUser || !supabase) return;
+    try {
+      const client = supabase as any;
+      const { error } = await client
+        .from('likes')
+        .delete()
+        .eq('report_id', reportId)
+        .eq('user_id', currentUser.user_id);
+      if (error) throw error;
+      await loadLikes();
+    } catch (err) {
+      console.error('Error unliking report:', err);
+      toast({ title: 'Error', description: 'Could not unlike the report', variant: 'destructive' });
     }
   };
 
@@ -492,6 +598,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     awardPoints,
     markNotificationRead,
     checkDailyStreak,
+    likeReport,
+    unlikeReport,
+    userLikedReports,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

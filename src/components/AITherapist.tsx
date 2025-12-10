@@ -54,6 +54,7 @@ export const AITherapist: React.FC = () => {
     setIsLoading(true);
 
     // Simulate therapist thinking/typing delay (more natural)
+    const delay = Math.max(400, Math.min(1400, input.length * 25));
     setTimeout(() => {
       const therapeuticResponse = generateTherapeuticGuidance(analysis);
       
@@ -67,7 +68,7 @@ export const AITherapist: React.FC = () => {
       
       setMessages((prev) => [...prev, response]);
       setIsLoading(false);
-    }, 1200);
+    }, delay);
   };
 
   return (
@@ -190,6 +191,18 @@ export const AITherapist: React.FC = () => {
             >
               <Send className="w-4 h-4" />
             </Button>
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {['I feel anxious', 'I can\'t sleep', 'I lost someone', 'I\'m overwhelmed at work'].map((s) => (
+              <button
+                key={s}
+                className="px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                onClick={() => setInput(s)}
+              >
+                {s}
+              </button>
+            ))}
           </div>
 
           {/* Tips */}

@@ -12,7 +12,7 @@ export interface MotivationalQuote {
   emoji?: string;
 }
 
-const quotes: MotivationalQuote[] = [
+const localQuotes: MotivationalQuote[] = [
   {
     id: 1,
     text: "Your mental health is a priority, not a luxury. Invest in yourself.",
@@ -170,6 +170,66 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [quotes, setQuotes] = useState<MotivationalQuote[]>(localQuotes);
+
+  // Prefetch batches of quotes from public APIs to grow the pool beyond millions over time
+  useEffect(() => {
+    let cancelled = false;
+
+    const mapQuotable = (items: any[], nextIdStart: number): MotivationalQuote[] => {
+      return items.map((q, idx) => ({
+        id: nextIdStart + idx,
+        text: q.content,
+        author: q.author || 'Unknown',
+        category: 'hope',
+        emoji: '✨',
+      }));
+    };
+
+    const mapZen = (items: any[], nextIdStart: number): MotivationalQuote[] => {
+      return items.map((q: any, idx: number) => ({
+        id: nextIdStart + idx,
+        text: q.q,
+        author: q.a || 'Unknown',
+        category: 'hope',
+        emoji: '🌟',
+      }));
+    };
+
+    const fetchBatch = async () => {
+      try {
+        const nextIdStart = quotes.length + 1;
+        // Try Quotable batch
+        const res1 = await fetch('https://api.quotable.io/quotes?limit=50');
+        if (res1.ok) {
+          const data = await res1.json();
+          const mapped = mapQuotable(data.results || [], nextIdStart);
+          if (!cancelled && mapped.length) {
+            setQuotes(prev => [...prev, ...mapped]);
+          }
+        }
+        // Fill with ZenQuotes random
+        const res2 = await fetch('https://zenquotes.io/api/random');
+        if (res2.ok) {
+          const data = await res2.json();
+          const mapped = mapZen(Array.isArray(data) ? data : [data], quotes.length + 1);
+          if (!cancelled && mapped.length) {
+            setQuotes(prev => [...prev, ...mapped]);
+          }
+        }
+      } catch (_err) {
+        // Keep silent; local quotes remain
+      }
+    };
+
+    // Initial fetch and periodic enrichment
+    fetchBatch();
+    const timer = setInterval(fetchBatch, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [quotes.length]);
 
   useEffect(() => {
     if (!autoPlay || isPaused) return;
@@ -179,12 +239,13 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
     }, interval);
 
     return () => clearInterval(timer);
-  }, [autoPlay, interval, isPaused]);
+  }, [autoPlay, interval, isPaused, quotes.length]);
 
   const currentQuote = quotes[currentIndex];
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % quotes.length);
+    // When nearing the end, trigger an enrichment fetch by updating length dependency
   };
 
   const prev = () => {
@@ -223,7 +284,7 @@ export const MotivationalQuotes: React.FC<MotivationalQuotesProps> = ({
           </Button>
 
           <div className="flex gap-1">
-            {quotes.map((_, idx) => (
+                {quotes.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}

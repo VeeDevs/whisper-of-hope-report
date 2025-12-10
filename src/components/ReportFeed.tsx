@@ -27,12 +27,13 @@ interface ReportWithDetails {
   created_at: string;
   comments?: any[];
   likes?: number;
+  likes_count?: number;
   shares?: number;
   userLiked?: boolean;
 }
 
 export const ReportFeed: React.FC = () => {
-  const { reports, createReport, addCommentToReport } = useApp();
+  const { reports, addCommentToReport, likeReport, unlikeReport, userLikedReports } = useApp();
   const [displayReports, setDisplayReports] = useState<ReportWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const ITEMS_PER_PAGE = 10;
@@ -43,20 +44,17 @@ export const ReportFeed: React.FC = () => {
   const [likedReports, setLikedReports] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // Transform and sort reports
     const sortedReports = (reports || [])
       .map((report: any) => ({
         ...report,
-        likes: Math.floor(Math.random() * 50),
-        shares: Math.floor(Math.random() * 10),
-        userLiked: false,
+        userLiked: userLikedReports.has(report.id),
       }))
       .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setDisplayReports(sortedReports);
     setVisibleCount(ITEMS_PER_PAGE);
     setHasMore(sortedReports.length > ITEMS_PER_PAGE);
-  }, [reports]);
+  }, [reports, userLikedReports]);
 
   const loadMore = useCallback(() => {
     if (loading) return;
@@ -85,19 +83,13 @@ export const ReportFeed: React.FC = () => {
     return () => obs.disconnect();
   }, [hasMore, loading, loadMore]);
 
-  const handleLike = (reportId: string) => {
-    if (likedReports.has(reportId)) {
-      likedReports.delete(reportId);
+  const handleLike = async (reportId: string) => {
+    if (userLikedReports.has(reportId)) {
+      await unlikeReport(reportId);
     } else {
-      likedReports.add(reportId);
-      // Trigger confetti effect for dopamine reward
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+      await likeReport(reportId);
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.8 } });
     }
-    setLikedReports(new Set(likedReports));
   };
 
   const handleComment = async (reportId: string) => {
@@ -162,12 +154,12 @@ export const ReportFeed: React.FC = () => {
         </Card>
       ) : (
         displayReports.slice(0, visibleCount).map((report) => (
-          <Card key={report.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3">
+          <Card key={report.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-card text-foreground">
+            <CardHeader className="pb-3 border-b">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-slate-900">{report.title}</h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <h3 className="text-lg font-bold">{report.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {report.anonymous_id} • {new Date(report.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -186,19 +178,19 @@ export const ReportFeed: React.FC = () => {
             </CardHeader>
 
             <CardContent className="pt-4 pb-4">
-              <p className="text-slate-700 leading-relaxed">{report.content}</p>
+              <p className="leading-relaxed">{report.content}</p>
               
               {report.comments && report.comments.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase">{report.comments.length} comments</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">{report.comments.length} comments</p>
                   {report.comments.slice(0, 2).map((comment: any) => (
-                    <div key={comment.id} className="bg-slate-50 p-2 rounded text-sm">
-                      <p className="font-medium text-slate-900">{comment.anonymous_id}</p>
-                      <p className="text-slate-700">{comment.content}</p>
+                    <div key={comment.id} className="bg-secondary p-2 rounded text-sm">
+                      <p className="font-medium">{comment.anonymous_id}</p>
+                      <p className="text-foreground">{comment.content}</p>
                     </div>
                   ))}
                   {report.comments.length > 2 && (
-                    <button className="text-sm text-blue-600 font-medium hover:underline">
+                    <button className="text-sm text-primary font-medium hover:underline">
                       View all {report.comments.length} comments
                     </button>
                   )}
@@ -206,30 +198,27 @@ export const ReportFeed: React.FC = () => {
               )}
             </CardContent>
 
-            <CardFooter className="border-t border-slate-200 bg-slate-50 py-2 flex flex-col gap-3">
+            <CardFooter className="border-t py-2 flex flex-col gap-3">
               {/* Engagement Stats */}
-              <div className="w-full flex gap-4 text-xs text-slate-600 px-2">
+              <div className="w-full flex gap-4 text-xs text-muted-foreground px-2">
                 <span className="flex items-center gap-1">
-                  <ThumbsUp className="w-4 h-4" /> {report.likes} likes
+                  <ThumbsUp className="w-4 h-4" /> {report.likes_count || 0} likes
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" /> {report.comments?.length || 0} comments
-                </span>
-                <span className="flex items-center gap-1">
-                  <Share2 className="w-4 h-4" /> {report.shares} shares
                 </span>
               </div>
 
               {/* Action Buttons */}
               <div className="w-full flex gap-2">
                 <Button
-                  variant={likedReports.has(report.id) ? 'default' : 'outline'}
+                  variant={userLikedReports.has(report.id) ? 'default' : 'outline'}
                   size="sm"
                   className="flex-1"
                   onClick={() => handleLike(report.id)}
                 >
                   <ThumbsUp className="w-4 h-4 mr-1" />
-                  {likedReports.has(report.id) ? 'Liked' : 'Like'}
+                  {userLikedReports.has(report.id) ? 'Liked' : 'Like'}
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1">
                   <MessageCircle className="w-4 h-4 mr-1" />
